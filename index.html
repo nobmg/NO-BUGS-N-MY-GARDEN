@@ -212,6 +212,30 @@
         <ul id="strategy-list" class="strategy-list"><li>Add financial + filing data to generate strategy.</li></ul>
       </section>
 
+
+      <section class="card seller-card">
+        <div class="card-title-row"><h2>Sell & Distribution Toolkit</h2><button id="generate-license-key" class="btn ghost" type="button">Generate License Key</button></div>
+        <form id="seller-form">
+          <div class="grid three">
+            <label>Your Brand Name<input id="seller-brand" type="text" placeholder="Acme Business Systems" required /></label>
+            <label>One-Time Price (USD)<input id="seller-price" type="number" step="0.01" placeholder="499" required /></label>
+            <label>Support Email<input id="seller-support" type="email" placeholder="support@yourbrand.com" required /></label>
+          </div>
+          <div class="grid two">
+            <label>License Holder<input id="license-holder" type="text" placeholder="Buyer company name" /></label>
+            <label>License Key<input id="license-key" type="text" readonly placeholder="Click Generate License Key" /></label>
+          </div>
+          <div class="actions-row">
+            <button id="download-seller-pack" class="btn primary" type="button">Download Seller Pack</button>
+            <button id="copy-sales-script" class="btn ghost" type="button">Copy Sales Script</button>
+          </div>
+        </form>
+        <ul class="strategy-list" id="seller-checklist">
+          <li>Fill your brand, price, and support email.</li>
+          <li>Generate a buyer license key.</li>
+          <li>Download Seller Pack to deliver app + license docs to customer.</li>
+        </ul>
+      </section>
       <section class="card holdings-card">
         <div class="card-title-row"><h2>Properties & Insurance Holdings</h2></div>
         <form id="holding-form" class="holding-form">

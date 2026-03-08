@@ -22,7 +22,7 @@ h1 { margin: .25rem 0 0; font-size: clamp(1.2rem, 2.8vw, 2rem); }
 .layout { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 1rem; padding: .6rem 1.2rem 1.4rem; }
 .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 18px; backdrop-filter: blur(12px); box-shadow: 0 24px 40px rgba(0,0,0,.35); padding: 1rem; }
 .form-card { grid-row: span 2; }
-.dashboard-card,.credit-card,.tradeline-card,.filing-card,.funding-card,.auto-loan-card,.strategy-card,.holdings-card { grid-column: 2; }
+.dashboard-card,.credit-card,.tradeline-card,.filing-card,.funding-card,.auto-loan-card,.strategy-card,.seller-card,.holdings-card { grid-column: 2; }
 .card-title-row,.toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 h2 { margin: 0; font-size: 1.05rem; }
 .subheading { margin: .9rem 0 .2rem; font-size: .95rem; color: #d9dfff; }
@@ -49,9 +49,14 @@ th { position: sticky; top: 0; background: rgba(20,27,59,.96); text-align: left;
 .num { text-align:right; }
 .row-actions { display: flex; gap: .35rem; }
 .row-actions button { border: 1px solid rgba(153,174,255,.3); background: rgba(114,130,220,.15); color: #fff; border-radius: 8px; padding: .28rem .45rem; cursor: pointer; }
+
+.actions-row { display: flex; gap: .6rem; margin-top: .8rem; }
+.actions-row .btn.primary { margin-top: 0; }
+.actions-row .btn { width: auto; }
+
 .strategy-list { margin: .8rem 0 0; padding-left: 1.1rem; display: grid; gap: .5rem; color: #dfe6ff; }
 .empty { margin: 1rem; border: 1px dashed rgba(153,174,255,.4); border-radius: 12px; padding: 1rem; text-align: center; color: var(--muted); }
 .footer { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 0 1.2rem 1rem; color: #cfd7ff; font-size: .85rem; }
 .toast { background: rgba(43,230,184,.2); border: 1px solid rgba(43,230,184,.55); border-radius: 10px; padding: .35rem .6rem; }
-@media (max-width:1360px){ .layout{grid-template-columns:1fr;} .form-card,.dashboard-card,.credit-card,.tradeline-card,.filing-card,.funding-card,.auto-loan-card,.strategy-card,.holdings-card{grid-column:auto;grid-row:auto;} .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
+@media (max-width:1360px){ .layout{grid-template-columns:1fr;} .form-card,.dashboard-card,.credit-card,.tradeline-card,.filing-card,.funding-card,.auto-loan-card,.strategy-card,.seller-card,.holdings-card{grid-column:auto;grid-row:auto;} .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
 @media (max-width:960px){ .grid.four,.grid.three,.grid.two,.toolbar-filters{grid-template-columns:1fr;display:grid;} .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .header-actions{justify-content:flex-start;} }

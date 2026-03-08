@@ -255,11 +255,82 @@ el("generate-qualification").addEventListener("click", () => {
   el("qualification-list").innerHTML = (messages.length ? messages : ["No gaps detected. Keep all profiles current and continue applying."]).map((x) => `<li>${x}</li>`).join("");
 });
 
+
+
+const downloadTextFile = (filename, content, type = "text/plain") => {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const buildLicenseKey = (brand, holder) => {
+  const base = `${brand}|${holder || "UNASSIGNED"}|${Date.now()}`;
+  const hash = btoa(base).replace(/[^A-Z0-9]/gi, "").slice(0, 20).toUpperCase();
+  return `${hash.slice(0, 5)}-${hash.slice(5, 10)}-${hash.slice(10, 15)}-${hash.slice(15, 20)}`;
+};
 el("generate-auto-loan").addEventListener("click", () => {
   render();
   showToast("Auto-approval check refreshed.");
 });
 
+
+
+el("generate-license-key").addEventListener("click", () => {
+  const brand = el("seller-brand").value.trim();
+  const holder = el("license-holder").value.trim();
+  if (!brand) {
+    showToast("Add your brand name first.");
+    return;
+  }
+  const key = buildLicenseKey(brand, holder);
+  el("license-key").value = key;
+  showToast("License key generated.");
+});
+
+el("copy-sales-script").addEventListener("click", async () => {
+  const brand = el("seller-brand").value.trim() || "Your Brand";
+  const price = el("seller-price").value.trim() || "Custom";
+  const support = el("seller-support").value.trim() || "support@example.com";
+  const script = `Thanks for your interest in ${brand}.\n\nThis package includes the full Business Credit, Filing & Funding Command Center app with local-first data storage and backup tooling.\nPrice: $${price} one-time.\nSupport: ${support}.\n\nDelivery includes app files, buyer license certificate, and onboarding instructions.`;
+  try {
+    await navigator.clipboard.writeText(script);
+    showToast("Sales script copied.");
+  } catch {
+    showToast("Could not copy. Please copy manually.");
+  }
+});
+
+el("download-seller-pack").addEventListener("click", async () => {
+  const brand = el("seller-brand").value.trim();
+  const price = el("seller-price").value.trim();
+  const support = el("seller-support").value.trim();
+  const holder = el("license-holder").value.trim() || "UNASSIGNED BUYER";
+  const key = el("license-key").value.trim() || buildLicenseKey(brand || "BRAND", holder);
+
+  if (!brand || !price || !support) {
+    showToast("Fill brand, price, and support email first.");
+    return;
+  }
+
+  const files = ["index.html", "app.js", "styles.css", "README.md"];
+  for (const file of files) {
+    const resp = await fetch(file);
+    const text = await resp.text();
+    downloadTextFile(`SELLER_PACK_${file}`, text, file.endsWith('.html') ? 'text/html' : 'text/plain');
+  }
+
+  const license = `SOFTWARE LICENSE CERTIFICATE\n\nBrand: ${brand}\nLicense Holder: ${holder}\nLicense Key: ${key}\nPrice Paid: $${price}\nSupport: ${support}\nIssued At: ${new Date().toISOString()}\n\nTerms: Buyer may use one copy for internal business operations. Redistribution/resale by buyer is prohibited without written permission from ${brand}.`;
+  const onboarding = `BUYER ONBOARDING\n\n1) Place index.html, app.js, styles.css in one folder.\n2) Run: python3 -m http.server 8000\n3) Open: http://localhost:8000\n4) Use Export/Import JSON for backups.\n\nSupport: ${support}`;
+  downloadTextFile("SELLER_PACK_LICENSE.txt", license);
+  downloadTextFile("SELLER_PACK_ONBOARDING.txt", onboarding);
+  downloadTextFile("SELLER_PACK_PRICE_QUOTE.txt", `Brand: ${brand}\nPrice: $${price}\nSupport: ${support}\nGenerated: ${new Date().toISOString()}`);
+  el("license-key").value = key;
+  showToast("Seller pack downloaded.");
+});
 el("export-json").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), ...state }, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
