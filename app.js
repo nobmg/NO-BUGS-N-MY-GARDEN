@@ -1,10 +1,14 @@
-const recordsKey = "businessRecordsHub.v4.records";
-const holdingsKey = "businessRecordsHub.v4.holdings";
-const profilesKey = "businessRecordsHub.v4.profiles";
-const tradelinesKey = "businessRecordsHub.v4.tradelines";
-const fundingKey = "businessRecordsHub.v4.funding";
+const keys = {
+  records: "businessRecordsHub.v5.records",
+  holdings: "businessRecordsHub.v5.holdings",
+  profiles: "businessRecordsHub.v5.profiles",
+  tradelines: "businessRecordsHub.v5.tradelines",
+  funding: "businessRecordsHub.v5.funding",
+  filings: "businessRecordsHub.v5.filings",
+  autoLoans: "businessRecordsHub.v5.autoLoans"
+};
 
-const companyNames = [
+const companies = [
   "Trust Company",
   "Transportation Company",
   "Consulting Company",
@@ -13,664 +17,295 @@ const companyNames = [
 ];
 
 const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-
 const amountNumber = (value) => Number.parseFloat(value || "0") || 0;
-const toPercent = (value) => `${(Number.parseFloat(value || "0") || 0).toFixed(1)}%`;
-
-const safeId = () => {
-  if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
-  return `id-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-};
-
-const parseStored = (key) => {
+const percent = (value) => `${(Number.parseFloat(value || "0") || 0).toFixed(1)}%`;
+const id = () => (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : `id-${Date.now()}-${Math.floor(Math.random() * 10000)}`);
+const parse = (key) => {
   try {
-    const parsed = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(parsed) ? parsed : [];
+    const v = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(v) ? v : [];
   } catch {
     return [];
   }
 };
 
-const form = document.getElementById("record-form");
-const formTitle = document.getElementById("form-title");
-const cancelEditBtn = document.getElementById("cancel-edit");
-const recordsBody = document.getElementById("records-body");
-const emptyState = document.getElementById("empty-state");
-const filterCompany = document.getElementById("filter-company");
-const searchInput = document.getElementById("search");
-const exportBtn = document.getElementById("export-json");
-const generateStrategyBtn = document.getElementById("generate-strategy");
-const strategyList = document.getElementById("strategy-list");
-
-const holdingForm = document.getElementById("holding-form");
-const holdingsBody = document.getElementById("holdings-body");
-const holdingsEmpty = document.getElementById("holdings-empty");
-
-const profileForm = document.getElementById("company-profile-form");
-const profilesBody = document.getElementById("profiles-body");
-const profilesEmpty = document.getElementById("profiles-empty");
-
-const tradelineForm = document.getElementById("tradeline-form");
-const tradelinesBody = document.getElementById("tradelines-body");
-const tradelinesEmpty = document.getElementById("tradelines-empty");
-
-const fundingForm = document.getElementById("funding-form");
-const fundingBody = document.getElementById("funding-body");
-const fundingEmpty = document.getElementById("funding-empty");
-const generateQualificationBtn = document.getElementById("generate-qualification");
-const qualificationList = document.getElementById("qualification-list");
-
-const kpiIncome = document.getElementById("kpi-income");
-const kpiExpense = document.getElementById("kpi-expense");
-const kpiNet = document.getElementById("kpi-net");
-const kpiCount = document.getElementById("kpi-count");
-const kpiSalaryPaid = document.getElementById("kpi-salary-paid");
-const kpiSalaryReceived = document.getElementById("kpi-salary-received");
+const byId = (domId) => document.getElementById(domId);
 
 const fields = {
-  id: document.getElementById("record-id"),
-  company: document.getElementById("company"),
-  entryType: document.getElementById("entry-type"),
-  recordType: document.getElementById("record-type"),
-  title: document.getElementById("title"),
-  date: document.getElementById("date"),
-  amount: document.getElementById("amount"),
-  contact: document.getElementById("contact"),
-  fromAccount: document.getElementById("from-account"),
-  toAccount: document.getElementById("to-account"),
-  status: document.getElementById("status"),
-  notes: document.getElementById("notes")
+  record: {
+    id: byId("record-id"), company: byId("company"), entryType: byId("entry-type"), recordType: byId("record-type"), title: byId("title"),
+    date: byId("date"), amount: byId("amount"), contact: byId("contact"), fromAccount: byId("from-account"), toAccount: byId("to-account"),
+    status: byId("status"), notes: byId("notes")
+  },
+  holding: {
+    id: byId("holding-id"), type: byId("holding-type"), name: byId("holding-name"), company: byId("holding-company"), value: byId("holding-value"),
+    date: byId("holding-date"), notes: byId("holding-notes")
+  },
+  profile: {
+    id: byId("profile-id"), company: byId("profile-company"), duns: byId("duns-number"), score: byId("business-credit-score"), months: byId("time-in-business")
+  },
+  tradeline: {
+    id: byId("tradeline-id"), company: byId("tradeline-company"), creditor: byId("tradeline-creditor"), type: byId("tradeline-type"), status: byId("tradeline-status"),
+    limit: byId("tradeline-limit"), balance: byId("tradeline-balance"), opened: byId("tradeline-opened"), paymentHistory: byId("tradeline-payment-history")
+  },
+  funding: {
+    id: byId("funding-id"), company: byId("funding-company"), name: byId("funding-name"), type: byId("funding-type"), stage: byId("funding-stage"),
+    amount: byId("funding-amount"), minScore: byId("funding-min-score"), minTime: byId("funding-min-time"), qualify: byId("funding-qualify")
+  },
+  filing: {
+    id: byId("filing-id"), company: byId("filing-company"), type: byId("filing-type"), reference: byId("filing-reference"), status: byId("filing-status"),
+    counterparty: byId("filing-counterparty"), effective: byId("filing-effective"), renewal: byId("filing-renewal"), amount: byId("filing-amount"), notes: byId("filing-notes")
+  },
+  auto: {
+    id: byId("auto-id"), company: byId("auto-company"), vehicle: byId("auto-vehicle"), price: byId("auto-price"), down: byId("auto-down"),
+    term: byId("auto-term"), apr: byId("auto-apr"), revenue: byId("auto-revenue"), debt: byId("auto-debt")
+  }
 };
 
-const holdingFields = {
-  id: document.getElementById("holding-id"),
-  type: document.getElementById("holding-type"),
-  name: document.getElementById("holding-name"),
-  company: document.getElementById("holding-company"),
-  value: document.getElementById("holding-value"),
-  date: document.getElementById("holding-date"),
-  notes: document.getElementById("holding-notes")
+const ui = {
+  recordsBody: byId("records-body"), recordsEmpty: byId("empty-state"),
+  holdingsBody: byId("holdings-body"), holdingsEmpty: byId("holdings-empty"),
+  profilesBody: byId("profiles-body"), profilesEmpty: byId("profiles-empty"),
+  tradelinesBody: byId("tradelines-body"), tradelinesEmpty: byId("tradelines-empty"),
+  fundingBody: byId("funding-body"), fundingEmpty: byId("funding-empty"),
+  filingsBody: byId("filings-body"), filingsEmpty: byId("filings-empty"),
+  autoBody: byId("auto-body"), autoEmpty: byId("auto-empty"),
+  strategyList: byId("strategy-list"), qualificationList: byId("qualification-list"),
+  formTitle: byId("form-title"), cancelEdit: byId("cancel-edit"),
+  search: byId("search"), filterCompany: byId("filter-company"),
+  kpiIncome: byId("kpi-income"), kpiExpense: byId("kpi-expense"), kpiNet: byId("kpi-net"), kpiCount: byId("kpi-count"),
+  kpiSalaryPaid: byId("kpi-salary-paid"), kpiSalaryReceived: byId("kpi-salary-received")
 };
 
-const profileFields = {
-  id: document.getElementById("profile-id"),
-  company: document.getElementById("profile-company"),
-  duns: document.getElementById("duns-number"),
-  score: document.getElementById("business-credit-score"),
-  months: document.getElementById("time-in-business")
+let state = {
+  records: parse(keys.records),
+  holdings: parse(keys.holdings),
+  profiles: parse(keys.profiles),
+  tradelines: parse(keys.tradelines),
+  funding: parse(keys.funding),
+  filings: parse(keys.filings),
+  autoLoans: parse(keys.autoLoans)
 };
 
-const tradelineFields = {
-  id: document.getElementById("tradeline-id"),
-  company: document.getElementById("tradeline-company"),
-  creditor: document.getElementById("tradeline-creditor"),
-  type: document.getElementById("tradeline-type"),
-  status: document.getElementById("tradeline-status"),
-  limit: document.getElementById("tradeline-limit"),
-  balance: document.getElementById("tradeline-balance"),
-  opened: document.getElementById("tradeline-opened"),
-  paymentHistory: document.getElementById("tradeline-payment-history")
+const save = () => {
+  Object.entries(keys).forEach(([k, v]) => localStorage.setItem(v, JSON.stringify(state[k])));
 };
 
-const fundingFields = {
-  id: document.getElementById("funding-id"),
-  company: document.getElementById("funding-company"),
-  name: document.getElementById("funding-name"),
-  type: document.getElementById("funding-type"),
-  stage: document.getElementById("funding-stage"),
-  amount: document.getElementById("funding-amount"),
-  minScore: document.getElementById("funding-min-score"),
-  minTime: document.getElementById("funding-min-time"),
-  qualify: document.getElementById("funding-qualify")
+const upsert = (collection, payload) => {
+  const i = state[collection].findIndex((x) => x.id === payload.id);
+  if (i >= 0) state[collection][i] = payload;
+  else state[collection].push(payload);
+};
+const del = (collection, itemId) => {
+  state[collection] = state[collection].filter((x) => x.id !== itemId);
+  save();
+  render();
 };
 
-const normalizeRecord = (record) => ({
-  id: record.id || safeId(),
-  company: record.company || "",
-  entryType: record.entryType || "Expense",
-  recordType: record.recordType || "",
-  title: record.title || "",
-  date: record.date || "",
-  amount: String(amountNumber(record.amount)),
-  contact: record.contact || "",
-  fromAccount: record.fromAccount || "",
-  toAccount: record.toAccount || "",
-  status: record.status || "Open",
-  notes: record.notes || ""
-});
-
-const normalizeHolding = (holding) => ({
-  id: holding.id || safeId(),
-  type: holding.type || "Real Property",
-  name: holding.name || "",
-  company: holding.company || "",
-  value: String(amountNumber(holding.value)),
-  date: holding.date || "",
-  notes: holding.notes || ""
-});
-
-const normalizeProfile = (profile) => ({
-  id: profile.id || safeId(),
-  company: profile.company || "",
-  duns: (profile.duns || "").trim(),
-  score: String(Math.max(0, Math.min(100, Number.parseFloat(profile.score || "0") || 0))),
-  months: String(Math.max(0, Number.parseInt(profile.months || "0", 10) || 0))
-});
-
-const normalizeTradeline = (tradeline) => ({
-  id: tradeline.id || safeId(),
-  company: tradeline.company || "",
-  creditor: tradeline.creditor || "",
-  type: tradeline.type || "Net 30",
-  status: tradeline.status || "Open",
-  limit: String(amountNumber(tradeline.limit)),
-  balance: String(amountNumber(tradeline.balance)),
-  opened: tradeline.opened || "",
-  paymentHistory: String(Math.max(0, Math.min(100, Number.parseFloat(tradeline.paymentHistory || "0") || 0)))
-});
-
-const normalizeFunding = (funding) => ({
-  id: funding.id || safeId(),
-  company: funding.company || "",
-  name: funding.name || "",
-  type: funding.type || "Loan",
-  stage: funding.stage || "Researching",
-  amount: String(amountNumber(funding.amount)),
-  minScore: String(Math.max(0, Math.min(100, Number.parseFloat(funding.minScore || "0") || 0))),
-  minTime: String(Math.max(0, Number.parseInt(funding.minTime || "0", 10) || 0)),
-  qualify: funding.qualify || "Unknown"
-});
-
-let records = parseStored(recordsKey).map(normalizeRecord);
-let holdings = parseStored(holdingsKey).map(normalizeHolding);
-let profiles = parseStored(profilesKey).map(normalizeProfile);
-let tradelines = parseStored(tradelinesKey).map(normalizeTradeline);
-let fundingPrograms = parseStored(fundingKey).map(normalizeFunding);
-
-const saveAll = () => {
-  localStorage.setItem(recordsKey, JSON.stringify(records));
-  localStorage.setItem(holdingsKey, JSON.stringify(holdings));
-  localStorage.setItem(profilesKey, JSON.stringify(profiles));
-  localStorage.setItem(tradelinesKey, JSON.stringify(tradelines));
-  localStorage.setItem(fundingKey, JSON.stringify(fundingPrograms));
-};
-
-const resetForm = () => {
-  form.reset();
-  fields.id.value = "";
-  fields.entryType.value = "Income";
-  formTitle.textContent = "Add Transaction";
-  cancelEditBtn.hidden = true;
-};
-const resetHoldingForm = () => {
-  holdingForm.reset();
-  holdingFields.id.value = "";
-};
-const resetProfileForm = () => {
-  profileForm.reset();
-  profileFields.id.value = "";
-};
-const resetTradelineForm = () => {
-  tradelineForm.reset();
-  tradelineFields.id.value = "";
-};
-const resetFundingForm = () => {
-  fundingForm.reset();
-  fundingFields.id.value = "";
-};
-
-const signedAmount = (record) => {
-  const amount = amountNumber(record.amount);
-  if (record.entryType === "Income" || record.entryType === "Salary Received") return amount;
-  if (record.entryType === "Transfer") return 0;
+const signedAmount = (r) => {
+  const amount = amountNumber(r.amount);
+  if (r.entryType === "Income" || r.entryType === "Salary Received") return amount;
+  if (r.entryType === "Transfer") return 0;
   return -amount;
 };
 
-const entryTypeClass = (type) => `type-${type.toLowerCase().replace(/\s+/g, "-")}`;
 const utilization = (line) => {
   const limit = amountNumber(line.limit);
-  const balance = amountNumber(line.balance);
-  return limit > 0 ? (balance / limit) * 100 : 0;
+  return limit > 0 ? (amountNumber(line.balance) / limit) * 100 : 0;
 };
 
-const getProfileByCompany = (company) => profiles.find((p) => p.company === company);
-const getTradelinesByCompany = (company) => tradelines.filter((t) => t.company === company);
-
-const getVisibleRecords = () => {
-  const company = filterCompany.value;
-  const term = searchInput.value.trim().toLowerCase();
-
-  return records
-    .filter((record) => company === "all" || record.company === company)
-    .filter((record) => {
-      if (!term) return true;
-      return [record.title, record.recordType, record.notes, record.contact, record.company, record.status, record.fromAccount, record.toAccount, record.entryType]
-        .filter(Boolean)
-        .some((text) => text.toLowerCase().includes(term));
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+const monthlyPayment = (principal, aprPct, termMonths) => {
+  const n = Number.parseInt(termMonths || "0", 10) || 0;
+  if (n <= 0) return 0;
+  const r = (Number.parseFloat(aprPct || "0") || 0) / 100 / 12;
+  if (r === 0) return principal / n;
+  return (principal * r) / (1 - Math.pow(1 + r, -n));
 };
 
-const renderKpis = (visible) => {
-  const totals = visible.reduce(
-    (acc, record) => {
-      const amount = amountNumber(record.amount);
-      if (record.entryType === "Income") acc.income += amount;
-      if (record.entryType === "Salary Received") {
-        acc.salaryReceived += amount;
-        acc.income += amount;
-      }
-      if (record.entryType === "Expense") acc.expense += amount;
-      if (record.entryType === "Salary Paid") {
-        acc.salaryPaid += amount;
-        acc.expense += amount;
-      }
-      return acc;
-    },
-    { income: 0, expense: 0, salaryPaid: 0, salaryReceived: 0 }
-  );
+const autoDecision = (scenario) => {
+  const profile = state.profiles.find((p) => p.company === scenario.company);
+  const score = Number.parseFloat(profile?.score || "0") || 0;
+  const months = Number.parseInt(profile?.months || "0", 10) || 0;
+  const principal = Math.max(0, amountNumber(scenario.price) - amountNumber(scenario.down));
+  const payment = monthlyPayment(principal, scenario.apr, scenario.term);
+  const revenue = amountNumber(scenario.revenue);
+  const debt = amountNumber(scenario.debt);
+  const dscr = payment > 0 ? (revenue - debt) / payment : 0;
 
-  kpiIncome.textContent = currency.format(totals.income);
-  kpiExpense.textContent = currency.format(totals.expense);
-  kpiNet.textContent = currency.format(totals.income - totals.expense);
-  kpiCount.textContent = String(visible.length);
-  kpiSalaryPaid.textContent = currency.format(totals.salaryPaid);
-  kpiSalaryReceived.textContent = currency.format(totals.salaryReceived);
+  let status = "Review Needed";
+  if (score >= 75 && months >= 12 && dscr >= 1.25) status = "Likely Auto Approved";
+  else if (score >= 68 && months >= 6 && dscr >= 1.1) status = "Conditional Approval";
+  else status = "Not Qualified Yet";
+
+  return { payment, dscr, status, score, months };
+};
+
+const normalize = {
+  record: (x) => ({ id: x.id || id(), company: x.company || "", entryType: x.entryType || "Expense", recordType: x.recordType || "", title: x.title || "", date: x.date || "", amount: String(amountNumber(x.amount)), contact: x.contact || "", fromAccount: x.fromAccount || "", toAccount: x.toAccount || "", status: x.status || "Open", notes: x.notes || "" }),
+  holding: (x) => ({ id: x.id || id(), type: x.type || "Real Property", name: x.name || "", company: x.company || "", value: String(amountNumber(x.value)), date: x.date || "", notes: x.notes || "" }),
+  profile: (x) => ({ id: x.id || id(), company: x.company || "", duns: (x.duns || "").trim(), score: String(Math.max(0, Math.min(100, Number.parseFloat(x.score || "0") || 0))), months: String(Math.max(0, Number.parseInt(x.months || "0", 10) || 0)) }),
+  tradeline: (x) => ({ id: x.id || id(), company: x.company || "", creditor: x.creditor || "", type: x.type || "Net 30", status: x.status || "Open", limit: String(amountNumber(x.limit)), balance: String(amountNumber(x.balance)), opened: x.opened || "", paymentHistory: String(Math.max(0, Math.min(100, Number.parseFloat(x.paymentHistory || "0") || 0))) }),
+  funding: (x) => ({ id: x.id || id(), company: x.company || "", name: x.name || "", type: x.type || "Loan", stage: x.stage || "Researching", amount: String(amountNumber(x.amount)), minScore: String(Math.max(0, Math.min(100, Number.parseFloat(x.minScore || "0") || 0))), minTime: String(Math.max(0, Number.parseInt(x.minTime || "0", 10) || 0)), qualify: x.qualify || "Unknown" }),
+  filing: (x) => ({ id: x.id || id(), company: x.company || "", type: x.type || "UCC1 Statement", reference: x.reference || "", status: x.status || "Draft", counterparty: x.counterparty || "", effective: x.effective || "", renewal: x.renewal || "", amount: String(amountNumber(x.amount)), notes: x.notes || "" }),
+  auto: (x) => ({ id: x.id || id(), company: x.company || "", vehicle: x.vehicle || "", price: String(amountNumber(x.price)), down: String(amountNumber(x.down)), term: String(Math.max(12, Number.parseInt(x.term || "60", 10) || 60)), apr: String(Math.max(0, Number.parseFloat(x.apr || "9.5") || 9.5)), revenue: String(amountNumber(x.revenue)), debt: String(amountNumber(x.debt)) })
+};
+
+Object.keys(state).forEach((k) => { state[k] = state[k].map(normalize[k.slice(0, -1)] || ((x) => x)); });
+
+const fillForm = (group, data) => Object.entries(fields[group]).forEach(([k, el]) => { el.value = data[k] || ""; });
+
+const emptyToggle = (body, emptyEl, len) => {
+  body.innerHTML = "";
+  emptyEl.hidden = len > 0;
 };
 
 const renderRecords = (visible) => {
-  recordsBody.innerHTML = "";
-  if (!visible.length) {
-    emptyState.hidden = false;
-    return;
-  }
-  emptyState.hidden = true;
-
-  visible.forEach((record) => {
+  emptyToggle(ui.recordsBody, ui.recordsEmpty, visible.length);
+  visible.forEach((r) => {
     const tr = document.createElement("tr");
-    const signed = signedAmount(record);
-    tr.innerHTML = `
-      <td>${record.date || "-"}</td><td>${record.company || "-"}</td><td><span class="entry-type ${entryTypeClass(record.entryType)}">${record.entryType}</span></td>
-      <td>${record.recordType || "-"}</td><td>${record.title || "-"}</td><td>${record.contact || "-"}</td><td>${record.fromAccount || "-"}</td><td>${record.toAccount || "-"}</td><td>${record.status || "-"}</td>
-      <td class="num">${signed > 0 ? "+" : signed < 0 ? "-" : "±"}${currency.format(Math.abs(signed || amountNumber(record.amount)))}</td><td>${record.notes || "-"}</td>
-      <td><div class="row-actions"><button type="button" class="edit">Edit</button><button type="button" class="delete">Delete</button></div></td>
-    `;
-
-    tr.querySelector(".edit").addEventListener("click", () => {
-      Object.entries(fields).forEach(([key, el]) => {
-        el.value = record[key] || "";
-      });
-      formTitle.textContent = "Edit Transaction";
-      cancelEditBtn.hidden = false;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    tr.querySelector(".delete").addEventListener("click", () => {
-      records = records.filter((x) => x.id !== record.id);
-      saveAll();
-      render();
-    });
-
-    recordsBody.append(tr);
+    const signed = signedAmount(r);
+    tr.innerHTML = `<td>${r.date || "-"}</td><td>${r.company}</td><td>${r.entryType}</td><td>${r.recordType}</td><td>${r.title}</td><td>${r.contact || "-"}</td><td>${r.fromAccount || "-"}</td><td>${r.toAccount || "-"}</td><td>${r.status}</td><td class="num">${signed > 0 ? "+" : signed < 0 ? "-" : "±"}${currency.format(Math.abs(signed || amountNumber(r.amount)))}</td><td>${r.notes || "-"}</td><td><div class="row-actions"><button class="edit">Edit</button><button class="delete">Delete</button></div></td>`;
+    tr.querySelector(".edit").addEventListener("click", () => { fillForm("record", r); ui.formTitle.textContent = "Edit Transaction"; ui.cancelEdit.hidden = false; window.scrollTo({ top: 0, behavior: "smooth" }); });
+    tr.querySelector(".delete").addEventListener("click", () => del("records", r.id));
+    ui.recordsBody.append(tr);
   });
 };
 
-const renderHoldings = () => {
-  holdingsBody.innerHTML = "";
-  if (!holdings.length) {
-    holdingsEmpty.hidden = false;
-    return;
-  }
-  holdingsEmpty.hidden = true;
-
-  holdings
-    .slice()
-    .sort((a, b) => amountNumber(b.value) - amountNumber(a.value))
-    .forEach((holding) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${holding.type}</td><td>${holding.name}</td><td>${holding.company}</td><td class="num">${currency.format(amountNumber(holding.value))}</td><td>${holding.date || "-"}</td><td>${holding.notes || "-"}</td>
-        <td><div class="row-actions"><button type="button" class="edit">Edit</button><button type="button" class="delete">Delete</button></div></td>
-      `;
-
-      tr.querySelector(".edit").addEventListener("click", () => {
-        Object.entries(holdingFields).forEach(([key, el]) => {
-          el.value = holding[key] || "";
-        });
-      });
-      tr.querySelector(".delete").addEventListener("click", () => {
-        holdings = holdings.filter((x) => x.id !== holding.id);
-        saveAll();
-        render();
-      });
-      holdingsBody.append(tr);
-    });
-};
-
-const renderProfiles = () => {
-  profilesBody.innerHTML = "";
-  if (!profiles.length) {
-    profilesEmpty.hidden = false;
-    return;
-  }
-  profilesEmpty.hidden = true;
-
-  profiles.forEach((profile) => {
+const renderSimple = (collection, bodyEl, emptyEl, cols, onEdit, rowMap) => {
+  const list = state[collection];
+  emptyToggle(bodyEl, emptyEl, list.length);
+  list.forEach((item) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${profile.company}</td><td>${profile.duns || "-"}</td><td>${profile.score || "-"}</td><td>${profile.months || "0"} months</td>
-      <td><div class="row-actions"><button type="button" class="edit">Edit</button><button type="button" class="delete">Delete</button></div></td>
-    `;
-
-    tr.querySelector(".edit").addEventListener("click", () => {
-      Object.entries(profileFields).forEach(([key, el]) => {
-        el.value = profile[key] || "";
-      });
-    });
-    tr.querySelector(".delete").addEventListener("click", () => {
-      profiles = profiles.filter((x) => x.id !== profile.id);
-      saveAll();
-      render();
-    });
-
-    profilesBody.append(tr);
+    tr.innerHTML = `${rowMap(item)}<td><div class="row-actions"><button class="edit">Edit</button><button class="delete">Delete</button></div></td>`;
+    tr.querySelector(".edit").addEventListener("click", () => onEdit(item));
+    tr.querySelector(".delete").addEventListener("click", () => del(collection, item.id));
+    bodyEl.append(tr);
   });
 };
 
-const renderTradelines = () => {
-  tradelinesBody.innerHTML = "";
-  if (!tradelines.length) {
-    tradelinesEmpty.hidden = false;
-    return;
-  }
-  tradelinesEmpty.hidden = true;
+const renderKpis = (visible) => {
+  const total = visible.reduce((acc, r) => {
+    const amount = amountNumber(r.amount);
+    if (r.entryType === "Income") acc.income += amount;
+    if (r.entryType === "Salary Received") { acc.income += amount; acc.salaryReceived += amount; }
+    if (r.entryType === "Expense") acc.expense += amount;
+    if (r.entryType === "Salary Paid") { acc.expense += amount; acc.salaryPaid += amount; }
+    return acc;
+  }, { income: 0, expense: 0, salaryPaid: 0, salaryReceived: 0 });
 
-  tradelines.forEach((line) => {
-    const util = utilization(line);
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${line.company}</td><td>${line.creditor}</td><td>${line.type}</td><td>${line.status}</td><td class="num">${currency.format(amountNumber(line.limit))}</td>
-      <td class="num">${currency.format(amountNumber(line.balance))}</td><td class="num">${toPercent(util)}</td><td>${toPercent(line.paymentHistory)}</td><td>${line.opened || "-"}</td>
-      <td><div class="row-actions"><button type="button" class="edit">Edit</button><button type="button" class="delete">Delete</button></div></td>
-    `;
-
-    tr.querySelector(".edit").addEventListener("click", () => {
-      Object.entries(tradelineFields).forEach(([key, el]) => {
-        el.value = line[key] || "";
-      });
-    });
-    tr.querySelector(".delete").addEventListener("click", () => {
-      tradelines = tradelines.filter((x) => x.id !== line.id);
-      saveAll();
-      render();
-    });
-
-    tradelinesBody.append(tr);
-  });
+  ui.kpiIncome.textContent = currency.format(total.income);
+  ui.kpiExpense.textContent = currency.format(total.expense);
+  ui.kpiNet.textContent = currency.format(total.income - total.expense);
+  ui.kpiCount.textContent = String(visible.length);
+  ui.kpiSalaryPaid.textContent = currency.format(total.salaryPaid);
+  ui.kpiSalaryReceived.textContent = currency.format(total.salaryReceived);
 };
 
-const renderFundingPrograms = () => {
-  fundingBody.innerHTML = "";
-  if (!fundingPrograms.length) {
-    fundingEmpty.hidden = false;
-    return;
-  }
-  fundingEmpty.hidden = true;
-
-  fundingPrograms.forEach((program) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${program.company}</td><td>${program.name}</td><td>${program.type}</td><td>${program.stage}</td><td class="num">${currency.format(amountNumber(program.amount))}</td>
-      <td>${program.minScore || "-"}</td><td>${program.minTime || "0"} months</td><td>${program.qualify}</td>
-      <td><div class="row-actions"><button type="button" class="edit">Edit</button><button type="button" class="delete">Delete</button></div></td>
-    `;
-
-    tr.querySelector(".edit").addEventListener("click", () => {
-      Object.entries(fundingFields).forEach(([key, el]) => {
-        el.value = program[key] || "";
-      });
-    });
-    tr.querySelector(".delete").addEventListener("click", () => {
-      fundingPrograms = fundingPrograms.filter((x) => x.id !== program.id);
-      saveAll();
-      render();
-    });
-
-    fundingBody.append(tr);
-  });
+const visibleRecords = () => {
+  const c = ui.filterCompany.value;
+  const term = ui.search.value.trim().toLowerCase();
+  return state.records
+    .filter((r) => c === "all" || r.company === c)
+    .filter((r) => !term || [r.title, r.recordType, r.notes, r.contact, r.fromAccount, r.toAccount, r.entryType].filter(Boolean).some((t) => t.toLowerCase().includes(term)))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
-const generateStrategies = () => {
-  const visible = getVisibleRecords();
-  const income = visible.filter((r) => ["Income", "Salary Received"].includes(r.entryType)).reduce((sum, r) => sum + amountNumber(r.amount), 0);
-  const outflow = visible.filter((r) => ["Expense", "Salary Paid"].includes(r.entryType)).reduce((sum, r) => sum + amountNumber(r.amount), 0);
-  const net = income - outflow;
-  const propertyValue = holdings.filter((h) => h.type === "Real Property").reduce((sum, h) => sum + amountNumber(h.value), 0);
-  const insuranceValue = holdings.filter((h) => h.type === "Insurance Policy").reduce((sum, h) => sum + amountNumber(h.value), 0);
+const generateStrategy = () => {
+  const inc = state.records.filter((r) => ["Income", "Salary Received"].includes(r.entryType)).reduce((s, r) => s + amountNumber(r.amount), 0);
+  const exp = state.records.filter((r) => ["Expense", "Salary Paid"].includes(r.entryType)).reduce((s, r) => s + amountNumber(r.amount), 0);
+  const filedUcc = state.filings.filter((f) => f.type === "UCC1 Statement" && ["Filed", "Active"].includes(f.status)).length;
+  const fiduciary = state.filings.filter((f) => f.type === "Fiduciary Filing" && ["Filed", "Active"].includes(f.status)).length;
+  const reserve = Math.max(0, inc - exp) * 0.15;
 
   const ideas = [
-    `Revenue target: push monthly run-rate above ${currency.format(Math.max(10000, income * 1.2))} by packaging cross-company service bundles.`,
-    net >= 0
-      ? `Net positive (${currency.format(net)}): allocate 20% of surplus to growth and 10% to underwriting reserve.`
-      : `Net negative (${currency.format(net)}): cut non-essential outflow by 12% and improve receivables collection speed.`,
-    `Use asset-backed positioning: property holdings ${currency.format(propertyValue)} and insurance coverage ${currency.format(insuranceValue)} should be updated quarterly for lender confidence.`
+    `Be-your-own-bank plan: target internal reserve account at ${currency.format(reserve)} (15% of net cash flow) and route all debt service through it.`,
+    `Structure secured financing stack: maintain active UCC1 filings (${filedUcc}) and standardized contracts to strengthen collateral credibility.`,
+    fiduciary > 0 ? `Fiduciary posture is active (${fiduciary} filing(s)); align trust/estate documentation with lending and grant packages.` : "Add fiduciary filings for trust-driven entities to improve governance score in underwriting reviews.",
+    "Create an internal lending policy: set max LTV, debt service coverage floor (1.25+), and approval matrix before external borrowing.",
+    "Use contract portfolio to support predictable revenue claims in loan applications (recurring service agreements, dispatch contracts, retainers)."
   ];
 
-  strategyList.innerHTML = "";
-  ideas.forEach((idea) => {
-    const li = document.createElement("li");
-    li.textContent = idea;
-    strategyList.append(li);
-  });
+  ui.strategyList.innerHTML = "";
+  ideas.forEach((txt) => { const li = document.createElement("li"); li.textContent = txt; ui.strategyList.append(li); });
 };
 
-const generateQualificationPlan = () => {
-  const ideas = [];
-
-  companyNames.forEach((company) => {
-    const profile = getProfileByCompany(company);
-    const companyTradelines = getTradelinesByCompany(company);
-    const avgUtil =
-      companyTradelines.length > 0
-        ? companyTradelines.reduce((sum, line) => sum + utilization(line), 0) / companyTradelines.length
-        : 0;
-    const avgPayment =
-      companyTradelines.length > 0
-        ? companyTradelines.reduce((sum, line) => sum + (Number.parseFloat(line.paymentHistory) || 0), 0) / companyTradelines.length
-        : 0;
-
+const generateQualification = () => {
+  const lines = [];
+  companies.forEach((company) => {
+    const profile = state.profiles.find((p) => p.company === company);
+    const tradelines = state.tradelines.filter((t) => t.company === company);
+    const filings = state.filings.filter((f) => f.company === company);
     const score = Number.parseFloat(profile?.score || "0") || 0;
     const months = Number.parseInt(profile?.months || "0", 10) || 0;
+    const avgUtil = tradelines.length ? tradelines.reduce((s, t) => s + utilization(t), 0) / tradelines.length : 0;
 
-    if (!profile || !profile.duns) {
-      ideas.push(`${company}: add/verify DUNS number first. Lenders and vendor tradelines typically require strong business identity data.`);
-      return;
-    }
+    if (!profile?.duns) lines.push(`${company}: add/verify DUNS before applications.`);
+    if (tradelines.length < 3) lines.push(`${company}: add ${3 - tradelines.length} tradeline(s) to improve credit depth.`);
+    if (avgUtil > 30) lines.push(`${company}: lower utilization from ${percent(avgUtil)} to <30% for stronger approvals.`);
+    if (!filings.some((f) => f.type === "UCC1 Statement" && ["Filed", "Active"].includes(f.status))) lines.push(`${company}: file/activate UCC1 if using collateral-backed lending strategy.`);
 
-    if (companyTradelines.length < 3) {
-      ideas.push(`${company}: open at least ${3 - companyTradelines.length} additional tradeline(s) to strengthen credit depth before large loan/grant applications.`);
-    }
-
-    if (avgUtil > 35) {
-      ideas.push(`${company}: reduce tradeline utilization from ${toPercent(avgUtil)} to below 30% to improve loan and credit approval odds.`);
-    }
-
-    if (avgPayment < 98) {
-      ideas.push(`${company}: improve payment history to 98%+ (current ${toPercent(avgPayment)}) for better underwriting decisions.`);
-    }
-
-    const matches = fundingPrograms.filter((program) => {
-      if (program.company !== company) return false;
-      return score >= (Number.parseFloat(program.minScore) || 0) && months >= (Number.parseInt(program.minTime, 10) || 0);
-    });
-
-    if (matches.length > 0) {
-      ideas.push(`${company}: likely qualified now for ${matches.length} program(s). Prioritize: ${matches.slice(0, 2).map((m) => m.name).join(", ")}.`);
-    } else {
-      ideas.push(`${company}: build qualification runway by increasing score to 80+, time-in-business to 12+ months, and keeping utilization low.`);
-    }
+    const matches = state.funding.filter((p) => p.company === company && score >= amountNumber(p.minScore) && months >= amountNumber(p.minTime));
+    if (matches.length) lines.push(`${company}: likely qualified for ${matches.length} program(s): ${matches.slice(0, 2).map((m) => m.name).join(", ")}.`);
+    else lines.push(`${company}: build to 75+ score and 12+ months time-in-business for better loan/grant access.`);
   });
 
-  if (!ideas.length) {
-    ideas.push("Add company profiles, tradelines, and funding programs first to generate qualification guidance.");
-  }
-
-  qualificationList.innerHTML = "";
-  ideas.forEach((idea) => {
-    const li = document.createElement("li");
-    li.textContent = idea;
-    qualificationList.append(li);
-  });
+  ui.qualificationList.innerHTML = "";
+  lines.forEach((txt) => { const li = document.createElement("li"); li.textContent = txt; ui.qualificationList.append(li); });
 };
+
+const runAutoQualifier = () => render();
 
 const render = () => {
-  const visible = getVisibleRecords();
+  const visible = visibleRecords();
   renderKpis(visible);
   renderRecords(visible);
-  renderHoldings();
-  renderProfiles();
-  renderTradelines();
-  renderFundingPrograms();
+
+  renderSimple("holdings", ui.holdingsBody, ui.holdingsEmpty, [], (item) => fillForm("holding", item), (x) => `<td>${x.type}</td><td>${x.name}</td><td>${x.company}</td><td class="num">${currency.format(amountNumber(x.value))}</td><td>${x.date || "-"}</td><td>${x.notes || "-"}</td>`);
+  renderSimple("profiles", ui.profilesBody, ui.profilesEmpty, [], (item) => fillForm("profile", item), (x) => `<td>${x.company}</td><td>${x.duns || "-"}</td><td>${x.score || "-"}</td><td>${x.months || 0} months</td>`);
+  renderSimple("tradelines", ui.tradelinesBody, ui.tradelinesEmpty, [], (item) => fillForm("tradeline", item), (x) => `<td>${x.company}</td><td>${x.creditor}</td><td>${x.type}</td><td>${x.status}</td><td class="num">${currency.format(amountNumber(x.limit))}</td><td class="num">${currency.format(amountNumber(x.balance))}</td><td class="num">${percent(utilization(x))}</td><td>${percent(x.paymentHistory)}</td><td>${x.opened || "-"}</td>`);
+  renderSimple("funding", ui.fundingBody, ui.fundingEmpty, [], (item) => fillForm("funding", item), (x) => `<td>${x.company}</td><td>${x.name}</td><td>${x.type}</td><td>${x.stage}</td><td class="num">${currency.format(amountNumber(x.amount))}</td><td>${x.minScore || "-"}</td><td>${x.minTime || 0} months</td><td>${x.qualify}</td>`);
+  renderSimple("filings", ui.filingsBody, ui.filingsEmpty, [], (item) => fillForm("filing", item), (x) => `<td>${x.company}</td><td>${x.type}</td><td>${x.reference}</td><td>${x.status}</td><td>${x.counterparty || "-"}</td><td>${x.effective || "-"}</td><td>${x.renewal || "-"}</td><td class="num">${currency.format(amountNumber(x.amount))}</td><td>${x.notes || "-"}</td>`);
+
+  emptyToggle(ui.autoBody, ui.autoEmpty, state.autoLoans.length);
+  state.autoLoans.forEach((scenario) => {
+    const evald = autoDecision(scenario);
+    const tr = document.createElement("tr");
+    const principal = Math.max(0, amountNumber(scenario.price) - amountNumber(scenario.down));
+    tr.innerHTML = `<td>${scenario.company}</td><td>${scenario.vehicle}</td><td class="num">${currency.format(amountNumber(scenario.price))}</td><td class="num">${currency.format(amountNumber(scenario.down))}</td><td>${scenario.term} mo</td><td>${percent(scenario.apr)}</td><td class="num">${currency.format(evald.payment)}</td><td class="num">${evald.dscr.toFixed(2)}</td><td>${evald.status}</td><td><div class="row-actions"><button class="edit">Edit</button><button class="delete">Delete</button></div></td>`;
+    tr.querySelector(".edit").addEventListener("click", () => fillForm("auto", scenario));
+    tr.querySelector(".delete").addEventListener("click", () => del("autoLoans", scenario.id));
+    ui.autoBody.append(tr);
+  });
 };
 
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const payload = normalizeRecord({
-    id: fields.id.value || safeId(),
-    company: fields.company.value,
-    entryType: fields.entryType.value,
-    recordType: fields.recordType.value.trim(),
-    title: fields.title.value.trim(),
-    date: fields.date.value,
-    amount: fields.amount.value,
-    contact: fields.contact.value.trim(),
-    fromAccount: fields.fromAccount.value.trim(),
-    toAccount: fields.toAccount.value.trim(),
-    status: fields.status.value,
-    notes: fields.notes.value.trim()
-  });
+const getPayload = (group) => Object.fromEntries(Object.entries(fields[group]).map(([k, el]) => [k, el.value]));
 
-  const index = records.findIndex((record) => record.id === payload.id);
-  if (index >= 0) records[index] = payload;
-  else records.push(payload);
-  saveAll();
-  resetForm();
-  render();
-});
+byId("record-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("records", normalize.record(getPayload("record"))); save(); resetRecord(); render(); });
+byId("holding-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("holdings", normalize.holding(getPayload("holding"))); save(); fields.holding.id.value = ""; byId("holding-form").reset(); render(); });
+byId("company-profile-form").addEventListener("submit", (e) => { e.preventDefault(); const p = normalize.profile(getPayload("profile")); const existing = state.profiles.find((x) => x.company === p.company); if (existing && !p.id) p.id = existing.id; upsert("profiles", p); save(); fields.profile.id.value = ""; byId("company-profile-form").reset(); render(); });
+byId("tradeline-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("tradelines", normalize.tradeline(getPayload("tradeline"))); save(); fields.tradeline.id.value = ""; byId("tradeline-form").reset(); render(); });
+byId("funding-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("funding", normalize.funding(getPayload("funding"))); save(); fields.funding.id.value = ""; byId("funding-form").reset(); render(); });
+byId("filing-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("filings", normalize.filing(getPayload("filing"))); save(); fields.filing.id.value = ""; byId("filing-form").reset(); render(); });
+byId("auto-loan-form").addEventListener("submit", (e) => { e.preventDefault(); upsert("autoLoans", normalize.auto(getPayload("auto"))); save(); fields.auto.id.value = ""; byId("auto-loan-form").reset(); fields.auto.term.value = "60"; fields.auto.apr.value = "9.5"; render(); });
 
-holdingForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const payload = normalizeHolding({
-    id: holdingFields.id.value || safeId(),
-    type: holdingFields.type.value,
-    name: holdingFields.name.value.trim(),
-    company: holdingFields.company.value,
-    value: holdingFields.value.value,
-    date: holdingFields.date.value,
-    notes: holdingFields.notes.value.trim()
-  });
+const resetRecord = () => { byId("record-form").reset(); fields.record.id.value = ""; fields.record.entryType.value = "Income"; ui.formTitle.textContent = "Add Transaction"; ui.cancelEdit.hidden = true; };
+ui.cancelEdit.addEventListener("click", resetRecord);
+ui.filterCompany.addEventListener("change", render);
+ui.search.addEventListener("input", render);
 
-  const index = holdings.findIndex((item) => item.id === payload.id);
-  if (index >= 0) holdings[index] = payload;
-  else holdings.push(payload);
-  saveAll();
-  resetHoldingForm();
-  render();
-});
+byId("generate-strategy").addEventListener("click", generateStrategy);
+byId("generate-qualification").addEventListener("click", generateQualification);
+byId("generate-auto-loan").addEventListener("click", runAutoQualifier);
 
-profileForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const payload = normalizeProfile({
-    id: profileFields.id.value || safeId(),
-    company: profileFields.company.value,
-    duns: profileFields.duns.value,
-    score: profileFields.score.value,
-    months: profileFields.months.value
-  });
-
-  const existingById = profiles.findIndex((item) => item.id === payload.id);
-  const existingByCompany = profiles.findIndex((item) => item.company === payload.company);
-  const index = existingById >= 0 ? existingById : existingByCompany;
-
-  if (index >= 0) profiles[index] = payload;
-  else profiles.push(payload);
-  saveAll();
-  resetProfileForm();
-  render();
-});
-
-tradelineForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const payload = normalizeTradeline({
-    id: tradelineFields.id.value || safeId(),
-    company: tradelineFields.company.value,
-    creditor: tradelineFields.creditor.value.trim(),
-    type: tradelineFields.type.value,
-    status: tradelineFields.status.value,
-    limit: tradelineFields.limit.value,
-    balance: tradelineFields.balance.value,
-    opened: tradelineFields.opened.value,
-    paymentHistory: tradelineFields.paymentHistory.value
-  });
-
-  const index = tradelines.findIndex((item) => item.id === payload.id);
-  if (index >= 0) tradelines[index] = payload;
-  else tradelines.push(payload);
-  saveAll();
-  resetTradelineForm();
-  render();
-});
-
-fundingForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const payload = normalizeFunding({
-    id: fundingFields.id.value || safeId(),
-    company: fundingFields.company.value,
-    name: fundingFields.name.value.trim(),
-    type: fundingFields.type.value,
-    stage: fundingFields.stage.value,
-    amount: fundingFields.amount.value,
-    minScore: fundingFields.minScore.value,
-    minTime: fundingFields.minTime.value,
-    qualify: fundingFields.qualify.value
-  });
-
-  const index = fundingPrograms.findIndex((item) => item.id === payload.id);
-  if (index >= 0) fundingPrograms[index] = payload;
-  else fundingPrograms.push(payload);
-  saveAll();
-  resetFundingForm();
-  render();
-});
-
-cancelEditBtn.addEventListener("click", resetForm);
-filterCompany.addEventListener("change", render);
-searchInput.addEventListener("input", render);
-generateStrategyBtn.addEventListener("click", generateStrategies);
-generateQualificationBtn.addEventListener("click", generateQualificationPlan);
-
-exportBtn.addEventListener("click", () => {
-  const payload = {
-    exportedAt: new Date().toISOString(),
-    records,
-    holdings,
-    profiles,
-    tradelines,
-    fundingPrograms
-  };
-
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+byId("export-json").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), ...state }, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "business-credit-funding-command-center.json";
+  a.download = "business-credit-filing-funding-command-center.json";
   a.click();
   URL.revokeObjectURL(url);
 });
 
-resetForm();
-resetHoldingForm();
-resetProfileForm();
-resetTradelineForm();
-resetFundingForm();
+resetRecord();
 render();

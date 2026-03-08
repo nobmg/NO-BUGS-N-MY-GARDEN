@@ -1,28 +1,20 @@
-# Business Growth, Credit & Funding Command Center
+# Business Credit, Filing & Funding Command Center
 
-A local-first app for multi-company accounting + business credit + funding qualification management.
-
-## Companies supported
-- Trust Company
-- Transportation Company
-- Consulting Company
-- Dispatch Company
-- Bookkeeping Company
+A local-first multi-company app for accounting, business credit, filings, and qualification strategy.
 
 ## Features
-- Spreadsheet-style accounting with income, expenses, salary tracking, and transfers
-- DUNS and company credit profile tracker (credit score + time in business)
-- Tradelines and credit account tracker (limit, balance, utilization, payment history)
-- Funding/loan/grant tracker with qualification requirements
-- Qualification action-plan generator to improve loan, credit, grant, and tradeline readiness
-- Holdings tracker for real properties and insurance policies
-- Scale strategy generator and full JSON export
+- Accounting ledger (income/expense/salary/transfers)
+- DUNS + company credit profile tracking
+- Tradelines and credit account tracking
+- UCC1 statements, contracts, and fiduciary filing tracker
+- Funding/loan/grant qualification tracker
+- Auto loan qualifier with estimated payment + DSCR + approval status
+- "Be your own bank" strategy guidance and qualification action plans
+- Holdings tracker for real property and insurance
+- Full JSON export of all modules
 
 ## Run locally
-Open `index.html` directly, or serve with:
-
 ```bash
 python3 -m http.server 8000
 ```
-
-Then open `http://localhost:8000`.
+Open `http://localhost:8000`.
