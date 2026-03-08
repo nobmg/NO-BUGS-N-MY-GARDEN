@@ -14,9 +14,15 @@
       <div>
         <p class="eyebrow">Executive Finance + Filing Suite</p>
         <h1>Business Credit, Filing & Funding Command Center</h1>
-        <p class="subtitle">Track accounting, DUNS, tradelines, contracts, UCC1/fiduciary filings, funding qualification, and auto-loan readiness.</p>
+        <p class="subtitle">Launch-ready operating system for accounting, credit building, filings, funding qualification, and auto-loan readiness.</p>
       </div>
-      <button id="export-json" class="btn ghost">Export Full JSON</button>
+      <div class="header-actions">
+        <button id="export-json" class="btn ghost">Export JSON</button>
+        <button id="import-json-btn" class="btn ghost">Import JSON</button>
+        <button id="download-template" class="btn ghost">Template</button>
+        <button id="clear-all" class="btn danger">Clear All</button>
+        <input id="import-json-file" type="file" accept="application/json" hidden />
+      </div>
     </header>
 
     <main class="layout">
@@ -25,18 +31,13 @@
           <h2 id="form-title">Add Transaction</h2>
           <button type="button" id="cancel-edit" class="btn ghost" hidden>Cancel</button>
         </div>
-
         <form id="record-form">
           <input type="hidden" id="record-id" />
           <div class="grid two">
             <label>Company
               <select id="company" required>
                 <option value="">Select company</option>
-                <option>Trust Company</option>
-                <option>Transportation Company</option>
-                <option>Consulting Company</option>
-                <option>Dispatch Company</option>
-                <option>Bookkeeping Company</option>
+                <option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option>
               </select>
             </label>
             <label>Transaction Type
@@ -46,22 +47,20 @@
             </label>
           </div>
           <div class="grid two">
-            <label>Record Type<input id="record-type" type="text" placeholder="Invoice, Payroll, Tax, Transfer" required /></label>
-            <label>Status
-              <select id="status"><option>Open</option><option>Pending</option><option>Paid</option><option>Closed</option></select>
-            </label>
+            <label>Record Type<input id="record-type" type="text" required /></label>
+            <label>Status<select id="status"><option>Open</option><option>Pending</option><option>Paid</option><option>Closed</option></select></label>
           </div>
-          <label>Title<input id="title" type="text" placeholder="Weekly payroll" required /></label>
+          <label>Title<input id="title" type="text" required /></label>
           <div class="grid three">
             <label>Date<input id="date" type="date" required /></label>
-            <label>Amount<input id="amount" type="number" step="0.01" required placeholder="0.00" /></label>
-            <label>Contact / Vendor<input id="contact" type="text" placeholder="Name" /></label>
+            <label>Amount<input id="amount" type="number" step="0.01" required /></label>
+            <label>Contact / Vendor<input id="contact" type="text" /></label>
           </div>
           <div class="grid two">
-            <label>From Account<input id="from-account" type="text" placeholder="Operating" /></label>
-            <label>To Account<input id="to-account" type="text" placeholder="Payroll / Reserve" /></label>
+            <label>From Account<input id="from-account" type="text" /></label>
+            <label>To Account<input id="to-account" type="text" /></label>
           </div>
-          <label>Notes<textarea id="notes" rows="3" placeholder="Transaction details"></textarea></label>
+          <label>Notes<textarea id="notes" rows="3"></textarea></label>
           <button type="submit" class="btn primary">Save Transaction</button>
         </form>
       </section>
@@ -74,7 +73,7 @@
               <option value="all">All Companies</option>
               <option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option>
             </select>
-            <input id="search" type="search" placeholder="Search records, account, notes..." />
+            <input id="search" type="search" placeholder="Search records..." />
           </div>
         </div>
         <div class="kpi-grid">
@@ -86,26 +85,26 @@
           <article class="kpi salary-in"><span>Salary Received</span><strong id="kpi-salary-received">$0.00</strong></article>
         </div>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Date</th><th>Company</th><th>Type</th><th>Record</th><th>Title</th><th>Contact</th><th>From</th><th>To</th><th>Status</th><th class="num">Amount</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="records-body"></tbody></table>
+          <table class="sheet"><thead><tr><th>Date</th><th>Company</th><th>Type</th><th>Record</th><th>Title</th><th>From</th><th>To</th><th>Status</th><th class="num">Amount</th><th>Actions</th></tr></thead><tbody id="records-body"></tbody></table>
           <div id="empty-state" class="empty" hidden>No transactions yet.</div>
         </div>
       </section>
 
       <section class="card credit-card">
-        <div class="card-title-row"><h2>Company DUNS & Credit Profiles</h2></div>
+        <div class="card-title-row"><h2>DUNS & Credit Profiles</h2></div>
         <form id="company-profile-form">
           <input type="hidden" id="profile-id" />
           <div class="grid four">
             <label>Company<select id="profile-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
             <label>DUNS Number<input id="duns-number" type="text" placeholder="12-345-6789" required /></label>
-            <label>Business Credit Score<input id="business-credit-score" type="number" min="0" max="100" placeholder="80" /></label>
-            <label>Time in Business (months)<input id="time-in-business" type="number" min="0" placeholder="24" /></label>
+            <label>Credit Score (0-100)<input id="business-credit-score" type="number" min="0" max="100" required /></label>
+            <label>Time in Business (months)<input id="time-in-business" type="number" min="0" required /></label>
           </div>
-          <button class="btn primary" type="submit">Save Company Credit Profile</button>
+          <button class="btn primary" type="submit">Save Profile</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Company</th><th>DUNS</th><th>Credit Score</th><th>Time in Business</th><th>Actions</th></tr></thead><tbody id="profiles-body"></tbody></table>
-          <div id="profiles-empty" class="empty" hidden>No DUNS/Credit profiles yet.</div>
+          <table class="sheet"><thead><tr><th>Company</th><th>DUNS</th><th>Score</th><th>Months</th><th>Actions</th></tr></thead><tbody id="profiles-body"></tbody></table>
+          <div id="profiles-empty" class="empty" hidden>No credit profiles yet.</div>
         </div>
       </section>
 
@@ -115,105 +114,102 @@
           <input type="hidden" id="tradeline-id" />
           <div class="grid four">
             <label>Company<select id="tradeline-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
-            <label>Creditor / Lender<input id="tradeline-creditor" type="text" required /></label>
-            <label>Account Type<select id="tradeline-type"><option>Net 30</option><option>Business Credit Card</option><option>Line of Credit</option><option>Installment Loan</option></select></label>
+            <label>Creditor<input id="tradeline-creditor" type="text" required /></label>
+            <label>Type<select id="tradeline-type"><option>Net 30</option><option>Business Credit Card</option><option>Line of Credit</option><option>Installment Loan</option></select></label>
             <label>Status<select id="tradeline-status"><option>Open</option><option>On Time</option><option>Late</option><option>Closed</option></select></label>
           </div>
           <div class="grid four">
-            <label>Credit Limit<input id="tradeline-limit" type="number" step="0.01" /></label>
-            <label>Current Balance<input id="tradeline-balance" type="number" step="0.01" /></label>
-            <label>Opened Date<input id="tradeline-opened" type="date" /></label>
-            <label>Payment History (%)<input id="tradeline-payment-history" type="number" min="0" max="100" /></label>
+            <label>Limit<input id="tradeline-limit" type="number" step="0.01" required /></label>
+            <label>Balance<input id="tradeline-balance" type="number" step="0.01" required /></label>
+            <label>Opened<input id="tradeline-opened" type="date" /></label>
+            <label>Payment History %<input id="tradeline-payment-history" type="number" min="0" max="100" required /></label>
           </div>
           <button class="btn primary" type="submit">Save Tradeline</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Company</th><th>Creditor</th><th>Type</th><th>Status</th><th class="num">Limit</th><th class="num">Balance</th><th class="num">Utilization</th><th>Payment %</th><th>Opened</th><th>Actions</th></tr></thead><tbody id="tradelines-body"></tbody></table>
+          <table class="sheet"><thead><tr><th>Company</th><th>Creditor</th><th>Type</th><th>Status</th><th class="num">Limit</th><th class="num">Balance</th><th class="num">Utilization</th><th>Actions</th></tr></thead><tbody id="tradelines-body"></tbody></table>
           <div id="tradelines-empty" class="empty" hidden>No tradelines yet.</div>
         </div>
       </section>
 
       <section class="card filing-card">
-        <div class="card-title-row"><h2>UCC1, Contracts & Fiduciary Filings</h2></div>
+        <div class="card-title-row"><h2>UCC1 / Contracts / Fiduciary Filings</h2></div>
         <form id="filing-form">
           <input type="hidden" id="filing-id" />
           <div class="grid four">
             <label>Company<select id="filing-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
-            <label>Filing Type<select id="filing-type"><option>UCC1 Statement</option><option>Contract</option><option>Fiduciary Filing</option></select></label>
-            <label>Reference / Number<input id="filing-reference" type="text" required placeholder="UCC# / Contract ID" /></label>
+            <label>Type<select id="filing-type"><option>UCC1 Statement</option><option>Contract</option><option>Fiduciary Filing</option></select></label>
+            <label>Reference<input id="filing-reference" type="text" required /></label>
             <label>Status<select id="filing-status"><option>Draft</option><option>Ready to File</option><option>Filed</option><option>Active</option><option>Expired</option></select></label>
           </div>
           <div class="grid four">
-            <label>Counterparty<input id="filing-counterparty" type="text" placeholder="Debtor / Lender / Client" /></label>
-            <label>Effective Date<input id="filing-effective" type="date" /></label>
-            <label>Renewal / Expiration<input id="filing-renewal" type="date" /></label>
-            <label>Secured Amount<input id="filing-amount" type="number" step="0.01" placeholder="0.00" /></label>
+            <label>Counterparty<input id="filing-counterparty" type="text" /></label>
+            <label>Effective<input id="filing-effective" type="date" /></label>
+            <label>Renewal<input id="filing-renewal" type="date" /></label>
+            <label>Amount<input id="filing-amount" type="number" step="0.01" /></label>
           </div>
-          <label>Notes<textarea id="filing-notes" rows="3" placeholder="Collateral, obligations, fiduciary terms, etc."></textarea></label>
-          <button class="btn primary" type="submit">Save Filing / Contract</button>
+          <label>Notes<textarea id="filing-notes" rows="2"></textarea></label>
+          <button class="btn primary" type="submit">Save Filing</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Company</th><th>Type</th><th>Reference</th><th>Status</th><th>Counterparty</th><th>Effective</th><th>Renewal</th><th class="num">Amount</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="filings-body"></tbody></table>
-          <div id="filings-empty" class="empty" hidden>No filings/contracts tracked yet.</div>
+          <table class="sheet"><thead><tr><th>Company</th><th>Type</th><th>Reference</th><th>Status</th><th>Renewal</th><th>Actions</th></tr></thead><tbody id="filings-body"></tbody></table>
+          <div id="filings-empty" class="empty" hidden>No filings tracked yet.</div>
         </div>
       </section>
 
       <section class="card funding-card">
-        <div class="card-title-row">
-          <h2>Funding, Loan & Grant Qualification Tracker</h2>
-          <button id="generate-qualification" type="button" class="btn ghost">Generate Qualification Plan</button>
-        </div>
+        <div class="card-title-row"><h2>Funding / Loan / Grant Qualification</h2><button id="generate-qualification" type="button" class="btn ghost">Generate Plan</button></div>
         <form id="funding-form">
           <input type="hidden" id="funding-id" />
           <div class="grid four">
             <label>Company<select id="funding-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
-            <label>Program Name<input id="funding-name" type="text" required placeholder="SBA 7(a)" /></label>
-            <label>Funding Type<select id="funding-type"><option>Loan</option><option>Line of Credit</option><option>Grant</option><option>Tradeline Expansion</option></select></label>
+            <label>Program<input id="funding-name" type="text" required /></label>
+            <label>Type<select id="funding-type"><option>Loan</option><option>Line of Credit</option><option>Grant</option><option>Tradeline Expansion</option></select></label>
             <label>Stage<select id="funding-stage"><option>Researching</option><option>Preparing Docs</option><option>Applied</option><option>Approved</option><option>Declined</option></select></label>
           </div>
           <div class="grid four">
-            <label>Target Amount<input id="funding-amount" type="number" step="0.01" /></label>
-            <label>Min Credit Score<input id="funding-min-score" type="number" min="0" max="100" /></label>
-            <label>Min Time in Business (months)<input id="funding-min-time" type="number" min="0" /></label>
+            <label>Target Amount<input id="funding-amount" type="number" step="0.01" required /></label>
+            <label>Min Score<input id="funding-min-score" type="number" min="0" max="100" required /></label>
+            <label>Min Months<input id="funding-min-time" type="number" min="0" required /></label>
             <label>Current Match<select id="funding-qualify"><option>Unknown</option><option>Likely Qualified</option><option>Needs Improvement</option><option>Not Qualified Yet</option></select></label>
           </div>
-          <button class="btn primary" type="submit">Save Funding Program</button>
+          <button class="btn primary" type="submit">Save Program</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Company</th><th>Program</th><th>Type</th><th>Stage</th><th class="num">Target Amount</th><th>Min Score</th><th>Min Time</th><th>Current Match</th><th>Actions</th></tr></thead><tbody id="funding-body"></tbody></table>
-          <div id="funding-empty" class="empty" hidden>No funding programs tracked yet.</div>
+          <table class="sheet"><thead><tr><th>Company</th><th>Program</th><th>Type</th><th class="num">Amount</th><th>Min Score</th><th>Min Months</th><th>Actions</th></tr></thead><tbody id="funding-body"></tbody></table>
+          <div id="funding-empty" class="empty" hidden>No funding programs yet.</div>
         </div>
-        <h3 class="subheading">Qualification Action Plan</h3>
-        <ul id="qualification-list" class="strategy-list"><li>Add company profiles, tradelines, funding programs, and filings, then generate plan.</li></ul>
+        <h3 class="subheading">Qualification Plan</h3>
+        <ul id="qualification-list" class="strategy-list"><li>Add profile + tradelines + programs and click Generate Plan.</li></ul>
       </section>
 
       <section class="card auto-loan-card">
-        <div class="card-title-row"><h2>Auto Loan Qualifier (Vehicle Approval)</h2><button id="generate-auto-loan" type="button" class="btn ghost">Run Auto-Approval Check</button></div>
+        <div class="card-title-row"><h2>Auto Loan Qualifier</h2><button id="generate-auto-loan" type="button" class="btn ghost">Run Check</button></div>
         <form id="auto-loan-form">
           <input type="hidden" id="auto-id" />
           <div class="grid four">
             <label>Company<select id="auto-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
-            <label>Vehicle Type<input id="auto-vehicle" type="text" required placeholder="Truck / Van / SUV" /></label>
-            <label>Vehicle Price<input id="auto-price" type="number" step="0.01" required /></label>
-            <label>Down Payment<input id="auto-down" type="number" step="0.01" /></label>
+            <label>Vehicle<input id="auto-vehicle" type="text" required /></label>
+            <label>Price<input id="auto-price" type="number" step="0.01" required /></label>
+            <label>Down<input id="auto-down" type="number" step="0.01" required /></label>
           </div>
           <div class="grid four">
-            <label>Requested Term (months)<input id="auto-term" type="number" min="12" max="84" value="60" /></label>
-            <label>Estimated APR (%)<input id="auto-apr" type="number" step="0.01" value="9.5" /></label>
-            <label>Estimated Monthly Revenue<input id="auto-revenue" type="number" step="0.01" placeholder="12000" /></label>
-            <label>Current Monthly Debt<input id="auto-debt" type="number" step="0.01" placeholder="2500" /></label>
+            <label>Term Months<input id="auto-term" type="number" min="12" max="84" value="60" required /></label>
+            <label>APR %<input id="auto-apr" type="number" step="0.01" value="9.5" required /></label>
+            <label>Monthly Revenue<input id="auto-revenue" type="number" step="0.01" required /></label>
+            <label>Monthly Debt<input id="auto-debt" type="number" step="0.01" required /></label>
           </div>
-          <button class="btn primary" type="submit">Save Auto Loan Scenario</button>
+          <button class="btn primary" type="submit">Save Scenario</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Company</th><th>Vehicle</th><th class="num">Price</th><th class="num">Down</th><th>Term</th><th>APR</th><th class="num">Est. Payment</th><th class="num">DSCR</th><th>Status</th><th>Actions</th></tr></thead><tbody id="auto-body"></tbody></table>
-          <div id="auto-empty" class="empty" hidden>No auto loan scenarios yet.</div>
+          <table class="sheet"><thead><tr><th>Company</th><th>Vehicle</th><th class="num">Payment</th><th class="num">DSCR</th><th>Status</th><th>Actions</th></tr></thead><tbody id="auto-body"></tbody></table>
+          <div id="auto-empty" class="empty" hidden>No auto-loan scenarios yet.</div>
         </div>
       </section>
 
       <section class="card strategy-card">
-        <div class="card-title-row"><h2>Business Strategy Engine (Be Your Own Bank)</h2><button id="generate-strategy" class="btn ghost" type="button">Generate Scale Strategy</button></div>
-        <ul id="strategy-list" class="strategy-list"><li>Add records, filings, and funding data, then generate strategy.</li></ul>
+        <div class="card-title-row"><h2>Be Your Own Bank Strategy</h2><button id="generate-strategy" class="btn ghost" type="button">Generate Strategy</button></div>
+        <ul id="strategy-list" class="strategy-list"><li>Add financial + filing data to generate strategy.</li></ul>
       </section>
 
       <section class="card holdings-card">
@@ -226,18 +222,24 @@
             <label>Company<select id="holding-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
           </div>
           <div class="grid three">
-            <label>Estimated Value ($)<input id="holding-value" type="number" step="0.01" required /></label>
-            <label>Renewal / Review Date<input id="holding-date" type="date" /></label>
+            <label>Estimated Value<input id="holding-value" type="number" step="0.01" required /></label>
+            <label>Review Date<input id="holding-date" type="date" /></label>
             <label>Notes<input id="holding-notes" type="text" /></label>
           </div>
           <button class="btn primary" type="submit">Save Holding</button>
         </form>
         <div class="sheet-wrap">
-          <table class="sheet"><thead><tr><th>Type</th><th>Name</th><th>Company</th><th class="num">Estimated Value</th><th>Renewal/Review</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="holdings-body"></tbody></table>
+          <table class="sheet"><thead><tr><th>Type</th><th>Name</th><th>Company</th><th class="num">Value</th><th>Actions</th></tr></thead><tbody id="holdings-body"></tbody></table>
           <div id="holdings-empty" class="empty" hidden>No holdings recorded yet.</div>
         </div>
       </section>
     </main>
+
+    <footer class="footer">
+      <span id="last-saved">Last saved: never</span>
+      <span id="app-version">Version: v6 launch-ready</span>
+      <span id="toast" class="toast" hidden></span>
+    </footer>
 
     <script src="app.js"></script>
   </body>
