@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Growth, Credit & Funding Command Center</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-one"></div>
+    <div class="bg-orb orb-two"></div>
+
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Executive Finance + Credit Suite</p>
+        <h1>Business Growth, Credit & Funding Command Center</h1>
+        <p class="subtitle">Track accounting, DUNS, tradelines, credit accounts, loans, grants, and qualification strategies in one place.</p>
+      </div>
+      <button id="export-json" class="btn ghost">Export Full JSON</button>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card">
+        <div class="card-title-row">
+          <h2 id="form-title">Add Transaction</h2>
+          <button type="button" id="cancel-edit" class="btn ghost" hidden>Cancel</button>
+        </div>
+
+        <form id="record-form">
+          <input type="hidden" id="record-id" />
+
+          <div class="grid two">
+            <label>Company
+              <select id="company" required>
+                <option value="">Select company</option>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
+
+            <label>Transaction Type
+              <select id="entry-type" required>
+                <option>Income</option>
+                <option>Expense</option>
+                <option>Salary Paid</option>
+                <option>Salary Received</option>
+                <option>Transfer</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>Record Type
+              <input id="record-type" type="text" placeholder="Invoice, Payroll, Tax, Transfer" required />
+            </label>
+
+            <label>Status
+              <select id="status">
+                <option>Open</option>
+                <option>Pending</option>
+                <option>Paid</option>
+                <option>Closed</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Title
+            <input id="title" type="text" placeholder="Weekly payroll" required />
+          </label>
+
+          <div class="grid three">
+            <label>Date
+              <input id="date" type="date" required />
+            </label>
+            <label>Amount
+              <input id="amount" type="number" step="0.01" required placeholder="0.00" />
+            </label>
+            <label>Contact / Employee / Vendor
+              <input id="contact" type="text" placeholder="Name" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>From Account
+              <input id="from-account" type="text" placeholder="Operating" />
+            </label>
+            <label>To Account
+              <input id="to-account" type="text" placeholder="Payroll / Reserve" />
+            </label>
+          </div>
+
+          <label>Notes
+            <textarea id="notes" rows="3" placeholder="Transaction details"></textarea>
+          </label>
+
+          <button type="submit" class="btn primary">Save Transaction</button>
+        </form>
+      </section>
+
+      <section class="card dashboard-card">
+        <div class="toolbar">
+          <h2>Accounting Spreadsheet</h2>
+          <div class="toolbar-filters">
+            <select id="filter-company">
+              <option value="all">All Companies</option>
+              <option>Trust Company</option>
+              <option>Transportation Company</option>
+              <option>Consulting Company</option>
+              <option>Dispatch Company</option>
+              <option>Bookkeeping Company</option>
+            </select>
+            <input id="search" type="search" placeholder="Search records, account, notes..." />
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi income"><span>Total Income</span><strong id="kpi-income">$0.00</strong></article>
+          <article class="kpi expense"><span>Total Outflow</span><strong id="kpi-expense">$0.00</strong></article>
+          <article class="kpi net"><span>Net Position</span><strong id="kpi-net">$0.00</strong></article>
+          <article class="kpi count"><span>Transactions</span><strong id="kpi-count">0</strong></article>
+          <article class="kpi salary"><span>Salary Paid</span><strong id="kpi-salary-paid">$0.00</strong></article>
+          <article class="kpi salary-in"><span>Salary Received</span><strong id="kpi-salary-received">$0.00</strong></article>
+        </div>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead>
+              <tr>
+                <th>Date</th><th>Company</th><th>Type</th><th>Record</th><th>Title</th><th>Contact</th><th>From</th><th>To</th><th>Status</th><th class="num">Amount</th><th>Notes</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+          <div id="empty-state" class="empty" hidden>No transactions yet.</div>
+        </div>
+      </section>
+
+      <section class="card credit-card">
+        <div class="card-title-row">
+          <h2>Company DUNS & Credit Profiles</h2>
+        </div>
+        <form id="company-profile-form">
+          <input type="hidden" id="profile-id" />
+          <div class="grid four">
+            <label>Company
+              <select id="profile-company" required>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
+            <label>DUNS Number
+              <input id="duns-number" type="text" placeholder="12-345-6789" required />
+            </label>
+            <label>Business Credit Score
+              <input id="business-credit-score" type="number" min="0" max="100" placeholder="80" />
+            </label>
+            <label>Time in Business (months)
+              <input id="time-in-business" type="number" min="0" placeholder="24" />
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Save Company Credit Profile</button>
+        </form>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead><tr><th>Company</th><th>DUNS</th><th>Credit Score</th><th>Time in Business</th><th>Actions</th></tr></thead>
+            <tbody id="profiles-body"></tbody>
+          </table>
+          <div id="profiles-empty" class="empty" hidden>No DUNS/Credit profiles yet.</div>
+        </div>
+      </section>
+
+      <section class="card tradeline-card">
+        <div class="card-title-row">
+          <h2>Tradelines & Credit Accounts</h2>
+        </div>
+        <form id="tradeline-form">
+          <input type="hidden" id="tradeline-id" />
+          <div class="grid four">
+            <label>Company
+              <select id="tradeline-company" required>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
+            <label>Creditor / Lender
+              <input id="tradeline-creditor" type="text" required placeholder="Vendor / Bank" />
+            </label>
+            <label>Account Type
+              <select id="tradeline-type">
+                <option>Net 30</option>
+                <option>Business Credit Card</option>
+                <option>Line of Credit</option>
+                <option>Installment Loan</option>
+              </select>
+            </label>
+            <label>Status
+              <select id="tradeline-status">
+                <option>Open</option>
+                <option>On Time</option>
+                <option>Late</option>
+                <option>Closed</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid four">
+            <label>Credit Limit
+              <input id="tradeline-limit" type="number" step="0.01" placeholder="10000" />
+            </label>
+            <label>Current Balance
+              <input id="tradeline-balance" type="number" step="0.01" placeholder="2500" />
+            </label>
+            <label>Opened Date
+              <input id="tradeline-opened" type="date" />
+            </label>
+            <label>Payment History (%)
+              <input id="tradeline-payment-history" type="number" min="0" max="100" placeholder="100" />
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Save Tradeline</button>
+        </form>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead><tr><th>Company</th><th>Creditor</th><th>Type</th><th>Status</th><th class="num">Limit</th><th class="num">Balance</th><th class="num">Utilization</th><th>Payment %</th><th>Opened</th><th>Actions</th></tr></thead>
+            <tbody id="tradelines-body"></tbody>
+          </table>
+          <div id="tradelines-empty" class="empty" hidden>No tradelines yet.</div>
+        </div>
+      </section>
+
+      <section class="card funding-card">
+        <div class="card-title-row">
+          <h2>Funding, Loan & Grant Qualification Tracker</h2>
+          <button id="generate-qualification" type="button" class="btn ghost">Generate Qualification Plan</button>
+        </div>
+
+        <form id="funding-form">
+          <input type="hidden" id="funding-id" />
+          <div class="grid four">
+            <label>Company
+              <select id="funding-company" required>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
+            <label>Program Name
+              <input id="funding-name" type="text" required placeholder="SBA 7(a) / Equipment Loan" />
+            </label>
+            <label>Funding Type
+              <select id="funding-type">
+                <option>Loan</option>
+                <option>Line of Credit</option>
+                <option>Grant</option>
+                <option>Tradeline Expansion</option>
+              </select>
+            </label>
+            <label>Stage
+              <select id="funding-stage">
+                <option>Researching</option>
+                <option>Preparing Docs</option>
+                <option>Applied</option>
+                <option>Approved</option>
+                <option>Declined</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid four">
+            <label>Target Amount
+              <input id="funding-amount" type="number" step="0.01" placeholder="50000" />
+            </label>
+            <label>Min Credit Score
+              <input id="funding-min-score" type="number" min="0" max="100" placeholder="75" />
+            </label>
+            <label>Min Time in Business (months)
+              <input id="funding-min-time" type="number" min="0" placeholder="12" />
+            </label>
+            <label>Current Match
+              <select id="funding-qualify">
+                <option>Unknown</option>
+                <option>Likely Qualified</option>
+                <option>Needs Improvement</option>
+                <option>Not Qualified Yet</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Save Funding Program</button>
+        </form>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead><tr><th>Company</th><th>Program</th><th>Type</th><th>Stage</th><th class="num">Target Amount</th><th>Min Score</th><th>Min Time</th><th>Current Match</th><th>Actions</th></tr></thead>
+            <tbody id="funding-body"></tbody>
+          </table>
+          <div id="funding-empty" class="empty" hidden>No funding programs tracked yet.</div>
+        </div>
+
+        <h3 class="subheading">Qualification Action Plan</h3>
+        <ul id="qualification-list" class="strategy-list">
+          <li>Add company credit profiles, tradelines, and funding programs, then click <strong>Generate Qualification Plan</strong>.</li>
+        </ul>
+      </section>
+
+      <section class="card strategy-card">
+        <div class="card-title-row">
+          <h2>Business Strategy Engine</h2>
+          <button id="generate-strategy" class="btn ghost" type="button">Generate Scale Strategy</button>
+        </div>
+        <ul id="strategy-list" class="strategy-list">
+          <li>Add transactions and holdings, then click <strong>Generate Scale Strategy</strong>.</li>
+        </ul>
+      </section>
+
+      <section class="card holdings-card">
+        <div class="card-title-row"><h2>Properties & Insurance Holdings</h2></div>
+        <form id="holding-form" class="holding-form">
+          <input type="hidden" id="holding-id" />
+          <div class="grid three">
+            <label>Holding Type
+              <select id="holding-type" required>
+                <option>Real Property</option>
+                <option>Insurance Policy</option>
+              </select>
+            </label>
+            <label>Name / Asset
+              <input id="holding-name" type="text" required placeholder="Warehouse A / Fleet Policy" />
+            </label>
+            <label>Company
+              <select id="holding-company" required>
+                <option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid three">
+            <label>Estimated Value ($)
+              <input id="holding-value" type="number" step="0.01" required placeholder="0.00" />
+            </label>
+            <label>Renewal / Review Date
+              <input id="holding-date" type="date" />
+            </label>
+            <label>Notes
+              <input id="holding-notes" type="text" placeholder="Coverage details, occupancy, etc." />
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Save Holding</button>
+        </form>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead><tr><th>Type</th><th>Name</th><th>Company</th><th class="num">Estimated Value</th><th>Renewal/Review</th><th>Notes</th><th>Actions</th></tr></thead>
+            <tbody id="holdings-body"></tbody>
+          </table>
+          <div id="holdings-empty" class="empty" hidden>No holdings recorded yet.</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
