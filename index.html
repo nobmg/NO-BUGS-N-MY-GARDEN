@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Records Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>Business Records Hub</h1>
+      <p>Manage records for your Trust, Transportation, Consulting, Dispatch, and Bookkeeping companies.</p>
+    </header>
+
+    <main class="container">
+      <section class="panel">
+        <h2 id="form-title">Add Record</h2>
+        <form id="record-form">
+          <input type="hidden" id="record-id" />
+
+          <label>
+            Company
+            <select id="company" required>
+              <option value="">Select company</option>
+              <option>Trust Company</option>
+              <option>Transportation Company</option>
+              <option>Consulting Company</option>
+              <option>Dispatch Company</option>
+              <option>Bookkeeping Company</option>
+            </select>
+          </label>
+
+          <label>
+            Record Type
+            <input id="record-type" type="text" placeholder="Invoice, Contract, Expense..." required />
+          </label>
+
+          <label>
+            Title
+            <input id="title" type="text" placeholder="Q1 Tax Filing" required />
+          </label>
+
+          <div class="row">
+            <label>
+              Date
+              <input id="date" type="date" required />
+            </label>
+
+            <label>
+              Amount
+              <input id="amount" type="number" step="0.01" placeholder="0.00" />
+            </label>
+          </div>
+
+          <label>
+            Contact / Vendor
+            <input id="contact" type="text" placeholder="Name or company" />
+          </label>
+
+          <label>
+            Status
+            <select id="status">
+              <option>Open</option>
+              <option>Pending</option>
+              <option>Paid</option>
+              <option>Closed</option>
+            </select>
+          </label>
+
+          <label>
+            Notes
+            <textarea id="notes" rows="4" placeholder="Store any important details here..."></textarea>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="primary">Save Record</button>
+            <button type="button" id="cancel-edit" class="secondary" hidden>Cancel Edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="toolbar">
+          <h2>Records</h2>
+          <button id="export-json" class="secondary">Export JSON</button>
+        </div>
+
+        <div class="filters">
+          <select id="filter-company">
+            <option value="all">All Companies</option>
+            <option>Trust Company</option>
+            <option>Transportation Company</option>
+            <option>Consulting Company</option>
+            <option>Dispatch Company</option>
+            <option>Bookkeeping Company</option>
+          </select>
+          <input id="search" type="search" placeholder="Search title, type, notes..." />
+        </div>
+
+        <div id="records-list" class="records-list"></div>
+      </section>
+    </main>
+
+    <template id="record-template">
+      <article class="record-card">
+        <div class="record-header">
+          <h3 class="record-title"></h3>
+          <span class="record-company badge"></span>
+        </div>
+        <p class="record-meta"></p>
+        <p class="record-notes"></p>
+        <div class="record-footer">
+          <span class="record-status badge muted"></span>
+          <div>
+            <button class="edit-btn secondary">Edit</button>
+            <button class="delete-btn danger">Delete</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>

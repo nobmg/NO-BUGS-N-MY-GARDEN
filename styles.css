@@ -1,0 +1,169 @@
+:root {
+  --bg: #f6f8fc;
+  --panel: #ffffff;
+  --text: #1f2a37;
+  --border: #d9e1ee;
+  --accent: #2952ff;
+  --accent-hover: #1d43df;
+  --danger: #bf1f3f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.header {
+  padding: 1.5rem;
+  background: #13264a;
+  color: #fff;
+}
+
+.header h1,
+.header p {
+  margin: 0;
+}
+
+.header p {
+  margin-top: 0.35rem;
+  opacity: 0.9;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font: inherit;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+.primary:hover {
+  background: var(--accent-hover);
+}
+
+.secondary {
+  background: #eef2ff;
+  color: #223072;
+}
+
+.danger {
+  background: #ffe6eb;
+  color: var(--danger);
+}
+
+.toolbar,
+.filters,
+.record-header,
+.record-footer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filters {
+  margin-bottom: 1rem;
+}
+
+.records-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.record-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #fcfdff;
+}
+
+.record-title,
+.record-meta,
+.record-notes {
+  margin: 0;
+}
+
+.record-meta {
+  color: #5c6b84;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.record-notes {
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: #dde7ff;
+  color: #1f367f;
+}
+
+.badge.muted {
+  background: #edf2f7;
+  color: #3e4b61;
+}
+
+.empty {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  color: #5c6b84;
+}
