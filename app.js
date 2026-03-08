@@ -1,17 +1,23 @@
-const storageKey = "businessRecordsHub.v1";
+const storageKey = "businessRecordsHub.v2";
 
 const form = document.getElementById("record-form");
 const formTitle = document.getElementById("form-title");
 const cancelEditBtn = document.getElementById("cancel-edit");
-const list = document.getElementById("records-list");
-const template = document.getElementById("record-template");
+const recordsBody = document.getElementById("records-body");
+const emptyState = document.getElementById("empty-state");
 const filterCompany = document.getElementById("filter-company");
 const searchInput = document.getElementById("search");
 const exportBtn = document.getElementById("export-json");
 
+const kpiIncome = document.getElementById("kpi-income");
+const kpiExpense = document.getElementById("kpi-expense");
+const kpiNet = document.getElementById("kpi-net");
+const kpiCount = document.getElementById("kpi-count");
+
 const fields = {
   id: document.getElementById("record-id"),
   company: document.getElementById("company"),
+  entryType: document.getElementById("entry-type"),
   recordType: document.getElementById("record-type"),
   title: document.getElementById("title"),
   date: document.getElementById("date"),
@@ -21,9 +27,38 @@ const fields = {
   notes: document.getElementById("notes")
 };
 
+const currency = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD"
+});
+
+const safeId = () => {
+  if (window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return `entry-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+};
+
+const normalizeRecord = (record) => ({
+  id: record.id || safeId(),
+  company: record.company || "",
+  entryType: record.entryType || "Expense",
+  recordType: record.recordType || "",
+  title: record.title || "",
+  date: record.date || "",
+  amount: record.amount || "0",
+  contact: record.contact || "",
+  status: record.status || "Open",
+  notes: record.notes || ""
+});
+
 const loadRecords = () => {
   try {
-    return JSON.parse(localStorage.getItem(storageKey)) || [];
+    const raw = JSON.parse(localStorage.getItem(storageKey));
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+    return raw.map(normalizeRecord);
   } catch {
     return [];
   }
@@ -38,11 +73,14 @@ const saveRecords = () => {
 const resetForm = () => {
   form.reset();
   fields.id.value = "";
-  formTitle.textContent = "Add Record";
+  fields.entryType.value = "Income";
+  formTitle.textContent = "Add Ledger Entry";
   cancelEditBtn.hidden = true;
 };
 
-const filteredRecords = () => {
+const amountNumber = (value) => Number.parseFloat(value || "0") || 0;
+
+const getVisibleRecords = () => {
   const company = filterCompany.value;
   const term = searchInput.value.trim().toLowerCase();
 
@@ -52,66 +90,106 @@ const filteredRecords = () => {
       if (!term) {
         return true;
       }
-      return [record.title, record.recordType, record.notes, record.contact]
+      return [record.title, record.recordType, record.notes, record.contact, record.company, record.status]
         .filter(Boolean)
         .some((text) => text.toLowerCase().includes(term));
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
-const render = () => {
-  list.innerHTML = "";
-  const visible = filteredRecords();
+const renderKpis = (visible) => {
+  const totals = visible.reduce(
+    (acc, record) => {
+      const amount = amountNumber(record.amount);
+      if (record.entryType === "Income") {
+        acc.income += amount;
+      } else {
+        acc.expense += amount;
+      }
+      return acc;
+    },
+    { income: 0, expense: 0 }
+  );
+
+  kpiIncome.textContent = currency.format(totals.income);
+  kpiExpense.textContent = currency.format(totals.expense);
+  kpiNet.textContent = currency.format(totals.income - totals.expense);
+  kpiCount.textContent = String(visible.length);
+};
+
+const renderRows = (visible) => {
+  recordsBody.innerHTML = "";
 
   if (!visible.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent = "No records found. Add one using the form.";
-    list.append(empty);
+    emptyState.hidden = false;
     return;
   }
 
+  emptyState.hidden = true;
+
   visible.forEach((record) => {
-    const node = template.content.firstElementChild.cloneNode(true);
+    const tr = document.createElement("tr");
 
-    node.querySelector(".record-title").textContent = record.title;
-    node.querySelector(".record-company").textContent = record.company;
-    node.querySelector(
-      ".record-meta"
-    ).textContent = `${record.recordType} • ${record.date}${record.amount ? ` • $${Number(record.amount).toFixed(2)}` : ""}${record.contact ? ` • ${record.contact}` : ""}`;
-    node.querySelector(".record-notes").textContent = record.notes || "No notes";
-    node.querySelector(".record-status").textContent = record.status;
+    const amount = amountNumber(record.amount);
+    const signedAmount = record.entryType === "Income" ? amount : -amount;
 
-    node.querySelector(".edit-btn").addEventListener("click", () => {
+    tr.innerHTML = `
+      <td>${record.date || "-"}</td>
+      <td>${record.company || "-"}</td>
+      <td><span class="entry-type ${record.entryType.toLowerCase()}">${record.entryType}</span></td>
+      <td>${record.recordType || "-"}</td>
+      <td>${record.title || "-"}</td>
+      <td>${record.contact || "-"}</td>
+      <td>${record.status || "-"}</td>
+      <td class="num">${signedAmount >= 0 ? "+" : "-"}${currency.format(Math.abs(signedAmount))}</td>
+      <td>${record.notes || "-"}</td>
+      <td>
+        <div class="row-actions">
+          <button type="button" class="edit">Edit</button>
+          <button type="button" class="delete">Delete</button>
+        </div>
+      </td>
+    `;
+
+    tr.querySelector(".edit").addEventListener("click", () => {
       fields.id.value = record.id;
       fields.company.value = record.company;
+      fields.entryType.value = record.entryType;
       fields.recordType.value = record.recordType;
       fields.title.value = record.title;
       fields.date.value = record.date;
-      fields.amount.value = record.amount || "";
-      fields.contact.value = record.contact || "";
+      fields.amount.value = record.amount;
+      fields.contact.value = record.contact;
       fields.status.value = record.status;
-      fields.notes.value = record.notes || "";
-      formTitle.textContent = "Edit Record";
+      fields.notes.value = record.notes;
+      formTitle.textContent = "Edit Ledger Entry";
       cancelEditBtn.hidden = false;
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    node.querySelector(".delete-btn").addEventListener("click", () => {
+    tr.querySelector(".delete").addEventListener("click", () => {
       records = records.filter((x) => x.id !== record.id);
       saveRecords();
       render();
     });
 
-    list.append(node);
+    recordsBody.append(tr);
   });
+};
+
+const render = () => {
+  const visible = getVisibleRecords();
+  renderKpis(visible);
+  renderRows(visible);
 };
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  const payload = {
-    id: fields.id.value || crypto.randomUUID(),
+
+  const payload = normalizeRecord({
+    id: fields.id.value || safeId(),
     company: fields.company.value,
+    entryType: fields.entryType.value,
     recordType: fields.recordType.value.trim(),
     title: fields.title.value.trim(),
     date: fields.date.value,
@@ -119,7 +197,7 @@ form.addEventListener("submit", (event) => {
     contact: fields.contact.value.trim(),
     status: fields.status.value,
     notes: fields.notes.value.trim()
-  };
+  });
 
   const index = records.findIndex((record) => record.id === payload.id);
   if (index >= 0) {
@@ -142,9 +220,10 @@ exportBtn.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "business-records.json";
+  a.download = "business-accounting-records.json";
   a.click();
   URL.revokeObjectURL(url);
 });
 
+resetForm();
 render();

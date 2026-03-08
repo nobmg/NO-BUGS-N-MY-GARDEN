@@ -3,44 +3,77 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Business Records Hub</title>
+    <title>Business Accounting Spreadsheet Hub</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="header">
-      <h1>Business Records Hub</h1>
-      <p>Manage records for your Trust, Transportation, Consulting, Dispatch, and Bookkeeping companies.</p>
+    <div class="bg-orb orb-one"></div>
+    <div class="bg-orb orb-two"></div>
+
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Multi-Company Ledger</p>
+        <h1>Business Accounting Spreadsheet Hub</h1>
+        <p class="subtitle">Track trust, transportation, consulting, dispatch, and bookkeeping records in one modern dashboard.</p>
+      </div>
+      <button id="export-json" class="btn ghost">Export JSON</button>
     </header>
 
-    <main class="container">
-      <section class="panel">
-        <h2 id="form-title">Add Record</h2>
+    <main class="layout">
+      <section class="card form-card">
+        <div class="card-title-row">
+          <h2 id="form-title">Add Ledger Entry</h2>
+          <button type="button" id="cancel-edit" class="btn ghost" hidden>Cancel</button>
+        </div>
+
         <form id="record-form">
           <input type="hidden" id="record-id" />
 
-          <label>
-            Company
-            <select id="company" required>
-              <option value="">Select company</option>
-              <option>Trust Company</option>
-              <option>Transportation Company</option>
-              <option>Consulting Company</option>
-              <option>Dispatch Company</option>
-              <option>Bookkeeping Company</option>
-            </select>
-          </label>
+          <div class="grid two">
+            <label>
+              Company
+              <select id="company" required>
+                <option value="">Select company</option>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
 
-          <label>
-            Record Type
-            <input id="record-type" type="text" placeholder="Invoice, Contract, Expense..." required />
-          </label>
+            <label>
+              Entry Type
+              <select id="entry-type" required>
+                <option>Income</option>
+                <option>Expense</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              Record Type
+              <input id="record-type" type="text" placeholder="Invoice, Fuel, Payroll, Contract" required />
+            </label>
+
+            <label>
+              Status
+              <select id="status">
+                <option>Open</option>
+                <option>Pending</option>
+                <option>Paid</option>
+                <option>Closed</option>
+              </select>
+            </label>
+          </div>
 
           <label>
             Title
-            <input id="title" type="text" placeholder="Q1 Tax Filing" required />
+            <input id="title" type="text" placeholder="March Dispatch Invoice" required />
           </label>
 
-          <div class="row">
+          <div class="grid three">
             <label>
               Date
               <input id="date" type="date" required />
@@ -48,76 +81,81 @@
 
             <label>
               Amount
-              <input id="amount" type="number" step="0.01" placeholder="0.00" />
+              <input id="amount" type="number" step="0.01" placeholder="0.00" required />
+            </label>
+
+            <label>
+              Contact / Vendor
+              <input id="contact" type="text" placeholder="Client or supplier" />
             </label>
           </div>
 
           <label>
-            Contact / Vendor
-            <input id="contact" type="text" placeholder="Name or company" />
-          </label>
-
-          <label>
-            Status
-            <select id="status">
-              <option>Open</option>
-              <option>Pending</option>
-              <option>Paid</option>
-              <option>Closed</option>
-            </select>
-          </label>
-
-          <label>
             Notes
-            <textarea id="notes" rows="4" placeholder="Store any important details here..."></textarea>
+            <textarea id="notes" rows="3" placeholder="Additional accounting details..."></textarea>
           </label>
 
-          <div class="actions">
-            <button type="submit" class="primary">Save Record</button>
-            <button type="button" id="cancel-edit" class="secondary" hidden>Cancel Edit</button>
-          </div>
+          <button type="submit" class="btn primary">Save Entry</button>
         </form>
       </section>
 
-      <section class="panel">
+      <section class="card dashboard-card">
         <div class="toolbar">
-          <h2>Records</h2>
-          <button id="export-json" class="secondary">Export JSON</button>
-        </div>
-
-        <div class="filters">
-          <select id="filter-company">
-            <option value="all">All Companies</option>
-            <option>Trust Company</option>
-            <option>Transportation Company</option>
-            <option>Consulting Company</option>
-            <option>Dispatch Company</option>
-            <option>Bookkeeping Company</option>
-          </select>
-          <input id="search" type="search" placeholder="Search title, type, notes..." />
-        </div>
-
-        <div id="records-list" class="records-list"></div>
-      </section>
-    </main>
-
-    <template id="record-template">
-      <article class="record-card">
-        <div class="record-header">
-          <h3 class="record-title"></h3>
-          <span class="record-company badge"></span>
-        </div>
-        <p class="record-meta"></p>
-        <p class="record-notes"></p>
-        <div class="record-footer">
-          <span class="record-status badge muted"></span>
-          <div>
-            <button class="edit-btn secondary">Edit</button>
-            <button class="delete-btn danger">Delete</button>
+          <h2>Spreadsheet View</h2>
+          <div class="toolbar-filters">
+            <select id="filter-company">
+              <option value="all">All Companies</option>
+              <option>Trust Company</option>
+              <option>Transportation Company</option>
+              <option>Consulting Company</option>
+              <option>Dispatch Company</option>
+              <option>Bookkeeping Company</option>
+            </select>
+            <input id="search" type="search" placeholder="Search title, type, notes..." />
           </div>
         </div>
-      </article>
-    </template>
+
+        <div class="kpi-grid">
+          <article class="kpi income">
+            <span>Total Income</span>
+            <strong id="kpi-income">$0.00</strong>
+          </article>
+          <article class="kpi expense">
+            <span>Total Expense</span>
+            <strong id="kpi-expense">$0.00</strong>
+          </article>
+          <article class="kpi net">
+            <span>Net Balance</span>
+            <strong id="kpi-net">$0.00</strong>
+          </article>
+          <article class="kpi count">
+            <span>Entries</span>
+            <strong id="kpi-count">0</strong>
+          </article>
+        </div>
+
+        <div class="sheet-wrap">
+          <table class="sheet" id="records-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Record</th>
+                <th>Title</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th class="num">Amount</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+          <div id="empty-state" class="empty" hidden>No entries found. Add your first ledger line item.</div>
+        </div>
+      </section>
+    </main>
 
     <script src="app.js"></script>
   </body>
