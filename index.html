@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Business Accounting Spreadsheet Hub</title>
+    <title>Business Growth & Accounting Command Center</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -12,17 +12,17 @@
 
     <header class="app-header">
       <div>
-        <p class="eyebrow">Multi-Company Ledger</p>
-        <h1>Business Accounting Spreadsheet Hub</h1>
-        <p class="subtitle">Track trust, transportation, consulting, dispatch, and bookkeeping records in one modern dashboard.</p>
+        <p class="eyebrow">Executive Finance Suite</p>
+        <h1>Business Growth & Accounting Command Center</h1>
+        <p class="subtitle">Manage transactions, salaries, direct account transfers, real properties, insurance holdings, and AI-style scaling strategies.</p>
       </div>
-      <button id="export-json" class="btn ghost">Export JSON</button>
+      <button id="export-json" class="btn ghost">Export Financial JSON</button>
     </header>
 
     <main class="layout">
       <section class="card form-card">
         <div class="card-title-row">
-          <h2 id="form-title">Add Ledger Entry</h2>
+          <h2 id="form-title">Add Transaction</h2>
           <button type="button" id="cancel-edit" class="btn ghost" hidden>Cancel</button>
         </div>
 
@@ -43,10 +43,13 @@
             </label>
 
             <label>
-              Entry Type
+              Transaction Type
               <select id="entry-type" required>
                 <option>Income</option>
                 <option>Expense</option>
+                <option>Salary Paid</option>
+                <option>Salary Received</option>
+                <option>Transfer</option>
               </select>
             </label>
           </div>
@@ -54,7 +57,7 @@
           <div class="grid two">
             <label>
               Record Type
-              <input id="record-type" type="text" placeholder="Invoice, Fuel, Payroll, Contract" required />
+              <input id="record-type" type="text" placeholder="Invoice, Fuel, Payroll, Insurance Premium" required />
             </label>
 
             <label>
@@ -70,7 +73,7 @@
 
           <label>
             Title
-            <input id="title" type="text" placeholder="March Dispatch Invoice" required />
+            <input id="title" type="text" placeholder="Weekly driver payroll" required />
           </label>
 
           <div class="grid three">
@@ -78,30 +81,39 @@
               Date
               <input id="date" type="date" required />
             </label>
-
             <label>
               Amount
-              <input id="amount" type="number" step="0.01" placeholder="0.00" required />
+              <input id="amount" type="number" step="0.01" required placeholder="0.00" />
             </label>
-
             <label>
-              Contact / Vendor
-              <input id="contact" type="text" placeholder="Client or supplier" />
+              Contact / Employee / Vendor
+              <input id="contact" type="text" placeholder="Person or business" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              From Account
+              <input id="from-account" type="text" placeholder="Operating Account" />
+            </label>
+            <label>
+              To Account
+              <input id="to-account" type="text" placeholder="Payroll / Savings / External" />
             </label>
           </div>
 
           <label>
             Notes
-            <textarea id="notes" rows="3" placeholder="Additional accounting details..."></textarea>
+            <textarea id="notes" rows="3" placeholder="Direct transfer info, payroll context, etc."></textarea>
           </label>
 
-          <button type="submit" class="btn primary">Save Entry</button>
+          <button type="submit" class="btn primary">Save Transaction</button>
         </form>
       </section>
 
       <section class="card dashboard-card">
         <div class="toolbar">
-          <h2>Spreadsheet View</h2>
+          <h2>Accounting Spreadsheet</h2>
           <div class="toolbar-filters">
             <select id="filter-company">
               <option value="all">All Companies</option>
@@ -111,31 +123,21 @@
               <option>Dispatch Company</option>
               <option>Bookkeeping Company</option>
             </select>
-            <input id="search" type="search" placeholder="Search title, type, notes..." />
+            <input id="search" type="search" placeholder="Search title, account, employee..." />
           </div>
         </div>
 
         <div class="kpi-grid">
-          <article class="kpi income">
-            <span>Total Income</span>
-            <strong id="kpi-income">$0.00</strong>
-          </article>
-          <article class="kpi expense">
-            <span>Total Expense</span>
-            <strong id="kpi-expense">$0.00</strong>
-          </article>
-          <article class="kpi net">
-            <span>Net Balance</span>
-            <strong id="kpi-net">$0.00</strong>
-          </article>
-          <article class="kpi count">
-            <span>Entries</span>
-            <strong id="kpi-count">0</strong>
-          </article>
+          <article class="kpi income"><span>Total Income</span><strong id="kpi-income">$0.00</strong></article>
+          <article class="kpi expense"><span>Total Outflow</span><strong id="kpi-expense">$0.00</strong></article>
+          <article class="kpi net"><span>Net Position</span><strong id="kpi-net">$0.00</strong></article>
+          <article class="kpi count"><span>Transactions</span><strong id="kpi-count">0</strong></article>
+          <article class="kpi salary"><span>Salary Paid</span><strong id="kpi-salary-paid">$0.00</strong></article>
+          <article class="kpi salary-in"><span>Salary Received</span><strong id="kpi-salary-received">$0.00</strong></article>
         </div>
 
         <div class="sheet-wrap">
-          <table class="sheet" id="records-table">
+          <table class="sheet">
             <thead>
               <tr>
                 <th>Date</th>
@@ -144,6 +146,8 @@
                 <th>Record</th>
                 <th>Title</th>
                 <th>Contact</th>
+                <th>From</th>
+                <th>To</th>
                 <th>Status</th>
                 <th class="num">Amount</th>
                 <th>Notes</th>
@@ -152,7 +156,83 @@
             </thead>
             <tbody id="records-body"></tbody>
           </table>
-          <div id="empty-state" class="empty" hidden>No entries found. Add your first ledger line item.</div>
+          <div id="empty-state" class="empty" hidden>No transactions yet.</div>
+        </div>
+      </section>
+
+      <section class="card strategy-card">
+        <div class="card-title-row">
+          <h2>Business Strategy Engine</h2>
+          <button id="generate-strategy" class="btn ghost" type="button">Generate Scale Strategy</button>
+        </div>
+        <ul id="strategy-list" class="strategy-list">
+          <li>Add transactions and holdings, then click <strong>Generate Scale Strategy</strong>.</li>
+        </ul>
+      </section>
+
+      <section class="card holdings-card">
+        <div class="card-title-row">
+          <h2>Properties & Insurance Holdings</h2>
+        </div>
+
+        <form id="holding-form" class="holding-form">
+          <input type="hidden" id="holding-id" />
+          <div class="grid three">
+            <label>
+              Holding Type
+              <select id="holding-type" required>
+                <option>Real Property</option>
+                <option>Insurance Policy</option>
+              </select>
+            </label>
+            <label>
+              Name / Asset
+              <input id="holding-name" type="text" required placeholder="Warehouse A / Fleet Policy" />
+            </label>
+            <label>
+              Company
+              <select id="holding-company" required>
+                <option>Trust Company</option>
+                <option>Transportation Company</option>
+                <option>Consulting Company</option>
+                <option>Dispatch Company</option>
+                <option>Bookkeeping Company</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid three">
+            <label>
+              Estimated Value ($)
+              <input id="holding-value" type="number" step="0.01" required placeholder="0.00" />
+            </label>
+            <label>
+              Renewal / Review Date
+              <input id="holding-date" type="date" />
+            </label>
+            <label>
+              Notes
+              <input id="holding-notes" type="text" placeholder="Coverage details, occupancy, etc." />
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Save Holding</button>
+        </form>
+
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th class="num">Estimated Value</th>
+                <th>Renewal/Review</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="holdings-body"></tbody>
+          </table>
+          <div id="holdings-empty" class="empty" hidden>No holdings recorded yet.</div>
         </div>
       </section>
     </main>
