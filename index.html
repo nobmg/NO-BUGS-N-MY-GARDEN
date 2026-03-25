@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Credit, Filing & Funding Command Center</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-one"></div>
+    <div class="bg-orb orb-two"></div>
+
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Executive Finance + Filing Suite</p>
+        <h1>Business Credit, Filing & Funding Command Center</h1>
+        <p class="subtitle">Launch-ready operating system for accounting, credit building, filings, funding qualification, and auto-loan readiness.</p>
+      </div>
+      <div class="header-actions">
+        <button id="export-json" class="btn ghost">Export JSON</button>
+        <button id="import-json-btn" class="btn ghost">Import JSON</button>
+        <button id="download-template" class="btn ghost">Template</button>
+        <button id="clear-all" class="btn danger">Clear All</button>
+        <input id="import-json-file" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card">
+        <div class="card-title-row">
+          <h2 id="form-title">Add Transaction</h2>
+          <button type="button" id="cancel-edit" class="btn ghost" hidden>Cancel</button>
+        </div>
+        <form id="record-form">
+          <input type="hidden" id="record-id" />
+          <div class="grid two">
+            <label>Company
+              <select id="company" required>
+                <option value="">Select company</option>
+                <option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option>
+              </select>
+            </label>
+            <label>Transaction Type
+              <select id="entry-type" required>
+                <option>Income</option><option>Expense</option><option>Salary Paid</option><option>Salary Received</option><option>Transfer</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid two">
+            <label>Record Type<input id="record-type" type="text" required /></label>
+            <label>Status<select id="status"><option>Open</option><option>Pending</option><option>Paid</option><option>Closed</option></select></label>
+          </div>
+          <label>Title<input id="title" type="text" required /></label>
+          <div class="grid three">
+            <label>Date<input id="date" type="date" required /></label>
+            <label>Amount<input id="amount" type="number" step="0.01" required /></label>
+            <label>Contact / Vendor<input id="contact" type="text" /></label>
+          </div>
+          <div class="grid two">
+            <label>From Account<input id="from-account" type="text" /></label>
+            <label>To Account<input id="to-account" type="text" /></label>
+          </div>
+          <label>Notes<textarea id="notes" rows="3"></textarea></label>
+          <button type="submit" class="btn primary">Save Transaction</button>
+        </form>
+      </section>
+
+      <section class="card dashboard-card">
+        <div class="toolbar">
+          <h2>Accounting Spreadsheet</h2>
+          <div class="toolbar-filters">
+            <select id="filter-company">
+              <option value="all">All Companies</option>
+              <option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option>
+            </select>
+            <input id="search" type="search" placeholder="Search records..." />
+          </div>
+        </div>
+        <div class="kpi-grid">
+          <article class="kpi income"><span>Total Income</span><strong id="kpi-income">$0.00</strong></article>
+          <article class="kpi expense"><span>Total Outflow</span><strong id="kpi-expense">$0.00</strong></article>
+          <article class="kpi net"><span>Net Position</span><strong id="kpi-net">$0.00</strong></article>
+          <article class="kpi count"><span>Transactions</span><strong id="kpi-count">0</strong></article>
+          <article class="kpi salary"><span>Salary Paid</span><strong id="kpi-salary-paid">$0.00</strong></article>
+          <article class="kpi salary-in"><span>Salary Received</span><strong id="kpi-salary-received">$0.00</strong></article>
+        </div>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Date</th><th>Company</th><th>Type</th><th>Record</th><th>Title</th><th>From</th><th>To</th><th>Status</th><th class="num">Amount</th><th>Actions</th></tr></thead><tbody id="records-body"></tbody></table>
+          <div id="empty-state" class="empty" hidden>No transactions yet.</div>
+        </div>
+      </section>
+
+      <section class="card credit-card">
+        <div class="card-title-row"><h2>DUNS & Credit Profiles</h2></div>
+        <form id="company-profile-form">
+          <input type="hidden" id="profile-id" />
+          <div class="grid four">
+            <label>Company<select id="profile-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+            <label>DUNS Number<input id="duns-number" type="text" placeholder="12-345-6789" required /></label>
+            <label>Credit Score (0-100)<input id="business-credit-score" type="number" min="0" max="100" required /></label>
+            <label>Time in Business (months)<input id="time-in-business" type="number" min="0" required /></label>
+          </div>
+          <button class="btn primary" type="submit">Save Profile</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Company</th><th>DUNS</th><th>Score</th><th>Months</th><th>Actions</th></tr></thead><tbody id="profiles-body"></tbody></table>
+          <div id="profiles-empty" class="empty" hidden>No credit profiles yet.</div>
+        </div>
+      </section>
+
+      <section class="card tradeline-card">
+        <div class="card-title-row"><h2>Tradelines & Credit Accounts</h2></div>
+        <form id="tradeline-form">
+          <input type="hidden" id="tradeline-id" />
+          <div class="grid four">
+            <label>Company<select id="tradeline-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+            <label>Creditor<input id="tradeline-creditor" type="text" required /></label>
+            <label>Type<select id="tradeline-type"><option>Net 30</option><option>Business Credit Card</option><option>Line of Credit</option><option>Installment Loan</option></select></label>
+            <label>Status<select id="tradeline-status"><option>Open</option><option>On Time</option><option>Late</option><option>Closed</option></select></label>
+          </div>
+          <div class="grid four">
+            <label>Limit<input id="tradeline-limit" type="number" step="0.01" required /></label>
+            <label>Balance<input id="tradeline-balance" type="number" step="0.01" required /></label>
+            <label>Opened<input id="tradeline-opened" type="date" /></label>
+            <label>Payment History %<input id="tradeline-payment-history" type="number" min="0" max="100" required /></label>
+          </div>
+          <button class="btn primary" type="submit">Save Tradeline</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Company</th><th>Creditor</th><th>Type</th><th>Status</th><th class="num">Limit</th><th class="num">Balance</th><th class="num">Utilization</th><th>Actions</th></tr></thead><tbody id="tradelines-body"></tbody></table>
+          <div id="tradelines-empty" class="empty" hidden>No tradelines yet.</div>
+        </div>
+      </section>
+
+      <section class="card filing-card">
+        <div class="card-title-row"><h2>UCC1 / Contracts / Fiduciary Filings</h2></div>
+        <form id="filing-form">
+          <input type="hidden" id="filing-id" />
+          <div class="grid four">
+            <label>Company<select id="filing-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+            <label>Type<select id="filing-type"><option>UCC1 Statement</option><option>Contract</option><option>Fiduciary Filing</option></select></label>
+            <label>Reference<input id="filing-reference" type="text" required /></label>
+            <label>Status<select id="filing-status"><option>Draft</option><option>Ready to File</option><option>Filed</option><option>Active</option><option>Expired</option></select></label>
+          </div>
+          <div class="grid four">
+            <label>Counterparty<input id="filing-counterparty" type="text" /></label>
+            <label>Effective<input id="filing-effective" type="date" /></label>
+            <label>Renewal<input id="filing-renewal" type="date" /></label>
+            <label>Amount<input id="filing-amount" type="number" step="0.01" /></label>
+          </div>
+          <label>Notes<textarea id="filing-notes" rows="2"></textarea></label>
+          <button class="btn primary" type="submit">Save Filing</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Company</th><th>Type</th><th>Reference</th><th>Status</th><th>Renewal</th><th>Actions</th></tr></thead><tbody id="filings-body"></tbody></table>
+          <div id="filings-empty" class="empty" hidden>No filings tracked yet.</div>
+        </div>
+      </section>
+
+      <section class="card funding-card">
+        <div class="card-title-row"><h2>Funding / Loan / Grant Qualification</h2><button id="generate-qualification" type="button" class="btn ghost">Generate Plan</button></div>
+        <form id="funding-form">
+          <input type="hidden" id="funding-id" />
+          <div class="grid four">
+            <label>Company<select id="funding-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+            <label>Program<input id="funding-name" type="text" required /></label>
+            <label>Type<select id="funding-type"><option>Loan</option><option>Line of Credit</option><option>Grant</option><option>Tradeline Expansion</option></select></label>
+            <label>Stage<select id="funding-stage"><option>Researching</option><option>Preparing Docs</option><option>Applied</option><option>Approved</option><option>Declined</option></select></label>
+          </div>
+          <div class="grid four">
+            <label>Target Amount<input id="funding-amount" type="number" step="0.01" required /></label>
+            <label>Min Score<input id="funding-min-score" type="number" min="0" max="100" required /></label>
+            <label>Min Months<input id="funding-min-time" type="number" min="0" required /></label>
+            <label>Current Match<select id="funding-qualify"><option>Unknown</option><option>Likely Qualified</option><option>Needs Improvement</option><option>Not Qualified Yet</option></select></label>
+          </div>
+          <button class="btn primary" type="submit">Save Program</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Company</th><th>Program</th><th>Type</th><th class="num">Amount</th><th>Min Score</th><th>Min Months</th><th>Actions</th></tr></thead><tbody id="funding-body"></tbody></table>
+          <div id="funding-empty" class="empty" hidden>No funding programs yet.</div>
+        </div>
+        <h3 class="subheading">Qualification Plan</h3>
+        <ul id="qualification-list" class="strategy-list"><li>Add profile + tradelines + programs and click Generate Plan.</li></ul>
+      </section>
+
+      <section class="card auto-loan-card">
+        <div class="card-title-row"><h2>Auto Loan Qualifier</h2><button id="generate-auto-loan" type="button" class="btn ghost">Run Check</button></div>
+        <form id="auto-loan-form">
+          <input type="hidden" id="auto-id" />
+          <div class="grid four">
+            <label>Company<select id="auto-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+            <label>Vehicle<input id="auto-vehicle" type="text" required /></label>
+            <label>Price<input id="auto-price" type="number" step="0.01" required /></label>
+            <label>Down<input id="auto-down" type="number" step="0.01" required /></label>
+          </div>
+          <div class="grid four">
+            <label>Term Months<input id="auto-term" type="number" min="12" max="84" value="60" required /></label>
+            <label>APR %<input id="auto-apr" type="number" step="0.01" value="9.5" required /></label>
+            <label>Monthly Revenue<input id="auto-revenue" type="number" step="0.01" required /></label>
+            <label>Monthly Debt<input id="auto-debt" type="number" step="0.01" required /></label>
+          </div>
+          <button class="btn primary" type="submit">Save Scenario</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Company</th><th>Vehicle</th><th class="num">Payment</th><th class="num">DSCR</th><th>Status</th><th>Actions</th></tr></thead><tbody id="auto-body"></tbody></table>
+          <div id="auto-empty" class="empty" hidden>No auto-loan scenarios yet.</div>
+        </div>
+      </section>
+
+      <section class="card strategy-card">
+        <div class="card-title-row"><h2>Be Your Own Bank Strategy</h2><button id="generate-strategy" class="btn ghost" type="button">Generate Strategy</button></div>
+        <ul id="strategy-list" class="strategy-list"><li>Add financial + filing data to generate strategy.</li></ul>
+      </section>
+
+
+      <section class="card seller-card">
+        <div class="card-title-row"><h2>Sell & Distribution Toolkit</h2><button id="generate-license-key" class="btn ghost" type="button">Generate License Key</button></div>
+        <form id="seller-form">
+          <div class="grid three">
+            <label>Your Brand Name<input id="seller-brand" type="text" placeholder="Acme Business Systems" required /></label>
+            <label>One-Time Price (USD)<input id="seller-price" type="number" step="0.01" placeholder="499" required /></label>
+            <label>Support Email<input id="seller-support" type="email" placeholder="support@yourbrand.com" required /></label>
+          </div>
+          <div class="grid two">
+            <label>License Holder<input id="license-holder" type="text" placeholder="Buyer company name" /></label>
+            <label>License Key<input id="license-key" type="text" readonly placeholder="Click Generate License Key" /></label>
+          </div>
+          <div class="actions-row">
+            <button id="download-seller-pack" class="btn primary" type="button">Download Seller Pack</button>
+            <button id="copy-sales-script" class="btn ghost" type="button">Copy Sales Script</button>
+          </div>
+        </form>
+        <ul class="strategy-list" id="seller-checklist">
+          <li>Fill your brand, price, and support email.</li>
+          <li>Generate a buyer license key.</li>
+          <li>Download Seller Pack to deliver app + license docs to customer.</li>
+        </ul>
+      </section>
+      <section class="card holdings-card">
+        <div class="card-title-row"><h2>Properties & Insurance Holdings</h2></div>
+        <form id="holding-form" class="holding-form">
+          <input type="hidden" id="holding-id" />
+          <div class="grid three">
+            <label>Holding Type<select id="holding-type" required><option>Real Property</option><option>Insurance Policy</option></select></label>
+            <label>Name / Asset<input id="holding-name" type="text" required /></label>
+            <label>Company<select id="holding-company" required><option>Trust Company</option><option>Transportation Company</option><option>Consulting Company</option><option>Dispatch Company</option><option>Bookkeeping Company</option></select></label>
+          </div>
+          <div class="grid three">
+            <label>Estimated Value<input id="holding-value" type="number" step="0.01" required /></label>
+            <label>Review Date<input id="holding-date" type="date" /></label>
+            <label>Notes<input id="holding-notes" type="text" /></label>
+          </div>
+          <button class="btn primary" type="submit">Save Holding</button>
+        </form>
+        <div class="sheet-wrap">
+          <table class="sheet"><thead><tr><th>Type</th><th>Name</th><th>Company</th><th class="num">Value</th><th>Actions</th></tr></thead><tbody id="holdings-body"></tbody></table>
+          <div id="holdings-empty" class="empty" hidden>No holdings recorded yet.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span id="last-saved">Last saved: never</span>
+      <span id="app-version">Version: v6 launch-ready</span>
+      <span id="toast" class="toast" hidden></span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
