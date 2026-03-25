@@ -58,10 +58,13 @@ const safeId = () => {
   return `id-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 };
 
+const isPlainObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+
 const parseStored = (key) => {
   try {
     const parsed = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isPlainObject);
   } catch {
     return [];
   }
